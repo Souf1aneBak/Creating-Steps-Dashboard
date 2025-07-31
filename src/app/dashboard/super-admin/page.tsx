@@ -1,7 +1,6 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import BuilderPage from '@/components/dashboard/Form_builder';
 import { useRouter } from 'next/navigation';
 
 export default function SuperAdminDashboard() {
@@ -87,7 +86,7 @@ export default function SuperAdminDashboard() {
 <button
   onClick={() => {
     setIsCreateModalOpen(false);
-    router.push('/dashboard/super-admin/create-steps'); 
+    router.push('/form_builder'); 
   }}
   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
 >
