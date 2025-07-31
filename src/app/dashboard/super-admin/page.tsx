@@ -1,11 +1,15 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import BuilderPage from '@/components/dashboard/Form_builder';
+import { useRouter } from 'next/navigation';
 
 export default function SuperAdminDashboard() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [createdSteps, setCreatedSteps] = useState<string[]>([]);
   const [editingStep, setEditingStep] = useState<string | null>(null);
+
+  const router=useRouter();
 
   const handleCreateStep = () => {
     const newStep = `Step ${createdSteps.length + 1}`;
@@ -64,9 +68,8 @@ export default function SuperAdminDashboard() {
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h2 className="text-xl font-bold mb-4">Creating Steps Page</h2>
             <div className="space-y-4">
-              <div className="border border-dashed border-gray-300 rounded-lg p-8 text-center">
-                <p>Step creation interface would go here</p>
-              </div>
+              <p className="text-gray-600">You are about to be redirected to the form builder.</p>
+
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => setIsCreateModalOpen(false)}
@@ -80,6 +83,17 @@ export default function SuperAdminDashboard() {
                 >
                   Create Step
                 </button>
+              
+<button
+  onClick={() => {
+    setIsCreateModalOpen(false);
+    router.push('/dashboard/super-admin/create-steps'); 
+  }}
+  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+>
+  Go to Builder
+</button>
+
               </div>
             </div>
           </div>
