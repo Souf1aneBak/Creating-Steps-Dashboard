@@ -18,6 +18,8 @@ const TOOLBOX_ELEMENTS = [
   { id: 'time', label: 'Time Input' },
   { id: 'dropdown', label: 'Dropdown Select' },
   { id: 'number', label: 'Number Input' },
+  { id: 'question-group', label: 'Radio-group' },
+
 ]
 
 type Field = {
@@ -26,7 +28,17 @@ type Field = {
   type : string 
   required : boolean
   options?: string[]
+  
   showOtherOption?: boolean
+  conditionalOptions?: {
+  option: string;  
+  inputs: { label: string; value: string }[]; 
+  radioQuestion?: string; 
+  radioOptions?: string[]; 
+  radioSelection?: string; 
+}[];
+
+
 }
 
 type Section = {
@@ -40,6 +52,19 @@ export default function BuilderPage() {
   const [previewMode, setPreviewMode] = useState(false)
   const [formTitle, setFormTitle] = useState('');
 const [formDescription, setFormDescription] = useState('');
+const [selectedConditional, setSelectedConditional] = useState<{ [key: string]: string }>({});
+const [previewRadioSelection, setPreviewRadioSelection] = useState<string | null>(null);
+const [previewCheckedOptions, setPreviewCheckedOptions] = useState<number[]>([]);
+const [previewInputValues, setPreviewInputValues] = useState<{ [key: string]: string }>({});
+
+const [previewRadioSelections, setPreviewRadioSelections] = useState<{ [key: string]: string }>({});
+
+
+const [checkedOptions, setCheckedOptions] = useState<{
+  [fieldId: string]: number[]; 
+}>({});
+
+
 
 const [timeValues, setTimeValues] = useState<{ [fieldId: string]: { date: string; time: string } }>({});
 
@@ -303,7 +328,7 @@ const handleAddSection = () => {
                                         />
 
                                         <label className="block mt-3 text-sm font-medium">Options:</label>
-                                        {field.options?.map((option, optIndex) => (
+                                         {field.options?.map((option, optIndex) => (
                                           <div key={optIndex} className="flex items-center gap-2 mb-1">
                                             <input type="checkbox" disabled />
                                             <input
@@ -329,7 +354,9 @@ const handleAddSection = () => {
                                         ))}
 
                                         <button
+                                        
                                           onClick={() => {
+                                            console.log("Ajouter option click", field.options);
                                             const updatedOptions = [...(field.options || []), `Option ${field.options!.length + 1}`]
                                             updateField(section.id, index, { options: updatedOptions })
                                           }}
@@ -366,7 +393,7 @@ const handleAddSection = () => {
                                       </div>
                                     )}
 
-                                    {field.id.startsWith("radio") && (
+                                      {field.id.startsWith("radio") && (
                                       <div className="space-y-2 mt-1">
                                         <label className="block text-sm font-medium mb-1">Question:</label>
                                         <input
@@ -456,6 +483,221 @@ const handleAddSection = () => {
                                         />
                                       </div>
                                     )}
+                                  
+
+{field.id.startsWith("question-group") && (
+  <div className="space-y-2 mt-1">
+    <label className="block text-sm font-medium mb-1">Question:</label>
+    <input
+      type="text"
+      value={field.label}
+      onChange={(e) => updateField(section.id, index, { label: e.target.value })}
+      className="w-full border p-2 rounded"
+    />
+
+    <div className="mt-2">
+      <label className="block text-sm font-medium">Choisir Oui / Non :</label>
+      <div className="flex gap-4 mt-1">
+        <label>
+          <input
+            type="radio"
+            name={`conditional-${field.id}`}
+            onChange={() => {
+              if (!field.conditionalOptions || field.conditionalOptions.length === 0) {
+                updateField(section.id, index, {
+                  conditionalOptions: [
+                    { option: 'Option 1', inputs: [{ label: 'Input Label 1', value: '' }], radioQuestion: '', radioOptions: [], radioSelection: '' },
+                    { option: 'Option 2', inputs: [{ label: 'Input Label 2', value: '' }], radioQuestion: '', radioOptions: [], radioSelection: '' },
+                  ],
+                });
+              }
+            }}
+          /> Oui
+        </label>
+        <label>
+          <input type="radio" name={`conditional-${field.id}`} /> Non
+        </label>
+      </div>
+    </div>
+
+    {field.conditionalOptions && (
+      <div className="mt-4">
+        {field.conditionalOptions.map((opt, optIdx) => (
+          <div key={optIdx} className="mb-4 border p-3 rounded bg-white">
+            <label className="flex items-center gap-2 mb-2">
+              <input
+                type="checkbox"
+                checked={checkedOptions[field.id]?.includes(optIdx) || false}
+                onChange={() => {
+                  setCheckedOptions((prev) => {
+                    const prevList = prev[field.id] || [];
+                    const newList = prevList.includes(optIdx)
+                      ? prevList.filter((i) => i !== optIdx)
+                      : [...prevList, optIdx];
+                    return { ...prev, [field.id]: newList };
+                  });
+                }}
+              />
+              <input
+                type="text"
+                value={opt.option}
+                onChange={(e) => {
+                  const updatedOptions = [...field.conditionalOptions!];
+                  updatedOptions[optIdx].option = e.target.value;
+                  updateField(section.id, index, { conditionalOptions: updatedOptions });
+                }}
+                className="border px-2 py-1 rounded w-full"
+              />
+            </label>
+
+           
+            {checkedOptions[field.id]?.includes(optIdx) && (
+              <div className="mt-2 pl-6 space-y-4">
+               
+                {opt.inputs.map((inputItem, inputIdx) => (
+                  <div key={inputIdx}>
+                    <label className="block text-sm font-medium mb-1">
+                      <input
+                        type="text"
+                        placeholder="Input label"
+                        value={inputItem.label}
+                        onChange={(e) => {
+                          const updatedOptions = [...field.conditionalOptions!];
+                          updatedOptions[optIdx].inputs[inputIdx].label = e.target.value;
+                          updateField(section.id, index, { conditionalOptions: updatedOptions });
+                        }}
+                        className="border px-2 py-1 rounded mb-1 w-full"
+                      />
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter input"
+                      className="border px-2 py-1 rounded w-full"
+                      value={inputItem.value}
+                      onChange={(e) => {
+                        const updatedOptions = [...field.conditionalOptions!];
+                        updatedOptions[optIdx].inputs[inputIdx].value = e.target.value;
+                        updateField(section.id, index, { conditionalOptions: updatedOptions });
+                      }}
+                    />
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  className="text-blue-600 text-sm hover:underline"
+                  onClick={() => {
+                    const updatedOptions = [...field.conditionalOptions!];
+                    updatedOptions[optIdx].inputs.push({ label: '', value: '' });
+                    updateField(section.id, index, { conditionalOptions: updatedOptions });
+                  }}
+                >
+                  ➕ Add Input
+                </button>
+
+                
+<div className="mt-4 space-y-2 border-t pt-3">
+  <label className="text-sm font-semibold block">Radio Question (optional)</label>
+
+  {/* Question input */}
+  <input
+    type="text"
+    placeholder="Enter a question"
+    className="border px-2 py-1 rounded w-full"
+    value={opt.radioQuestion || ''}
+    onChange={(e) => {
+      const updatedOptions = [...field.conditionalOptions!];
+      updatedOptions[optIdx].radioQuestion = e.target.value;
+      updateField(section.id, index, { conditionalOptions: updatedOptions });
+    }}
+  />
+
+  {/* Radio options */}
+  {opt.radioOptions && opt.radioOptions.length > 0 && (
+    <div className="space-y-2 mt-2">
+      {opt.radioOptions.map((rOpt, rIdx) => (
+        <div key={rIdx} className="flex items-center gap-2">
+          <input
+            type="radio"
+            name={`radio-${field.id}-${optIdx}`}
+            checked={opt.radioSelection === rOpt}
+            onChange={() => {
+              const updatedOptions = [...field.conditionalOptions!];
+              updatedOptions[optIdx].radioSelection = rOpt;
+              updateField(section.id, index, { conditionalOptions: updatedOptions });
+            }}
+          />
+          <input
+            type="text"
+            value={rOpt}
+            onChange={(e) => {
+              const updatedOptions = [...field.conditionalOptions!];
+              updatedOptions[optIdx].radioOptions![rIdx] = e.target.value;
+              updateField(section.id, index, { conditionalOptions: updatedOptions });
+            }}
+            className="border px-2 py-1 rounded w-full"
+          />
+          <button
+            type="button"
+            onClick={() => {
+              const updatedOptions = [...field.conditionalOptions!];
+              updatedOptions[optIdx].radioOptions!.splice(rIdx, 1);
+              updateField(section.id, index, { conditionalOptions: updatedOptions });
+            }}
+            className="text-red-600 hover:underline text-sm"
+          >
+            Delete
+          </button>
+        </div>
+      ))}
+    </div>
+  )}
+
+  {/* Add new radio option */}
+  <button
+    type="button"
+    className="text-blue-600 hover:underline text-sm mt-2"
+    onClick={() => {
+      const updatedOptions = [...field.conditionalOptions!];
+      if (!updatedOptions[optIdx].radioOptions) {
+        updatedOptions[optIdx].radioOptions = [];
+      }
+      updatedOptions[optIdx].radioOptions!.push('');
+      updateField(section.id, index, { conditionalOptions: updatedOptions });
+    }}
+  >
+    ➕ Add radio option
+  </button>
+</div>
+
+              </div>
+            )}
+          </div>
+        ))}
+       
+<button
+  type="button"
+  className="mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+  onClick={() => {
+    const updatedOptions = [...field.conditionalOptions!];
+    updatedOptions.push({
+      option: '',
+      inputs: [],
+      radioQuestion: '',
+      radioOptions: [],
+      radioSelection: '',
+    });
+    updateField(section.id, index, { conditionalOptions: updatedOptions });
+  }}
+>
+  ➕ Add Checkbox Option
+</button>
+
+      </div>
+    )}
+  </div>
+)}
+
 
                                     {field.id.startsWith("button") && (
                                       <button
@@ -644,6 +886,106 @@ const handleAddSection = () => {
         }));
       }}
     />
+  </div>
+)}
+
+{field.id.startsWith("question-group") && (
+  <div className="space-y-4 mt-2 border p-4 rounded bg-gray-50">
+    <label className="block font-medium mb-2">{field.label}</label>
+
+    {/* Oui / Non choice */}
+    <div className="flex gap-4 mb-4">
+      <label className="flex items-center gap-1">
+        <input
+          type="radio"
+          name={`preview-conditional-${field.id}`}
+          checked={previewRadioSelection === "Oui"}
+          onChange={() => setPreviewRadioSelection("Oui")}
+        />
+        Oui
+      </label>
+      <label className="flex items-center gap-1">
+        <input
+          type="radio"
+          name={`preview-conditional-${field.id}`}
+          checked={previewRadioSelection === "Non"}
+          onChange={() => setPreviewRadioSelection("Non")}
+        />
+        Non
+      </label>
+    </div>
+
+    {/* Options shown only if Oui is selected */}
+    {previewRadioSelection === "Oui" && field.conditionalOptions && (
+      <div className="space-y-3 ml-6">
+        {field.conditionalOptions.map((opt, optIdx) => (
+          <div key={optIdx}>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={previewCheckedOptions.includes(optIdx)}
+                onChange={() => {
+                  if (previewCheckedOptions.includes(optIdx)) {
+                    setPreviewCheckedOptions(previewCheckedOptions.filter(i => i !== optIdx));
+                  } else {
+                    setPreviewCheckedOptions([...previewCheckedOptions, optIdx]);
+                  }
+                }}
+              />
+              <span>{opt.option}</span>
+            </label>
+
+            {/* Inputs with labels */}
+            {previewCheckedOptions.includes(optIdx) && (
+              <div className="mt-2 space-y-4 pl-6">
+                {opt.inputs?.map((input, inputIdx) => (
+                  <div key={inputIdx}>
+                    {input.label && (
+                      <label className="block text-sm font-medium mb-1">{input.label}</label>
+                    )}
+                    <input
+                      type="text"
+                      className="border rounded px-2 py-1 w-full"
+                      placeholder="Réponse"
+                      value={previewInputValues[`${optIdx}-${inputIdx}`] || ""}
+                      onChange={(e) =>
+                        setPreviewInputValues({
+                          ...previewInputValues,
+                          [`${optIdx}-${inputIdx}`]: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                ))}
+
+                {/* Radio question if exists */}
+                {opt.radioQuestion && (
+                  <div className="mt-4 space-y-2 border-t pt-2">
+                    <p className="font-medium">{opt.radioQuestion}</p>
+                    {opt.radioOptions?.map((radioOpt, rIdx) => (
+                      <label key={rIdx} className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name={`preview-radio-${field.id}-${optIdx}`}
+                          checked={previewRadioSelections[`${optIdx}`] === radioOpt}
+                          onChange={() =>
+                            setPreviewRadioSelections({
+                              ...previewRadioSelections,
+                              [`${optIdx}`]: radioOpt,
+                            })
+                          }
+                        />
+                        <span>{radioOpt}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    )}
   </div>
 )}
 
