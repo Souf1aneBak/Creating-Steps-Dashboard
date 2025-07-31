@@ -5,7 +5,7 @@ import { ROLES } from '@/constants/roles';
 
 const superAdminLinks = [
   { name: 'Dashboard', href: '/dashboard/super-admin', icon: '🏠' },
- { name: 'Users', href: '/dashboard/super-admin/users-management', icon: '👥' },  { name: 'Commercial', href: '/dashboard/super-admin/commercial', icon: '💼' },
+ { name: 'Users', href: '/dashboard/super-admin/users-management', icon: '👥' },  { name: 'Commande Clients', href: '/dashboard/super-admin/commercial', icon: '💼' },
   { name: 'Settings', href: '/dashboard/super-admin/settings', icon: '⚙️' },
 ];
 
