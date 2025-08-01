@@ -3,11 +3,12 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Sidebar from '@/components/dashboard/Sidebar';
 import Navbar from '@/components/dashboard/Navbar';
+import Footer from '@/components/dashboard/Footer';
 
 export default function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   const router = useRouter();
 
@@ -19,16 +20,23 @@ export default function DashboardLayout({
   }, [router]);
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Navbar />
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      
+      <Navbar />
+
+      
+      <div className="flex flex-1 overflow-hidden">
+        
+        <Sidebar />
+
+        
         <main className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-7xl mx-auto">
-            {children}
-          </div>
+          {children}
         </main>
       </div>
+
+     
+      <Footer />
     </div>
   );
 }
