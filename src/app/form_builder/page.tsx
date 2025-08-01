@@ -14,9 +14,8 @@ const TOOLBOX_ELEMENTS = [
   { id: 'email', label: 'Email Input' },
   { id: 'phone', label: 'Phone Input' },
   { id: 'textarea', label: 'Textarea' },
-  { id: 'date', label: 'Date Input' },
   { id: 'time', label: 'Time Input' },
-  { id: 'dropdown', label: 'Dropdown Select' },
+  { id: 'select', label: 'Dropdown Select' },
   { id: 'number', label: 'Number Input' },
   { id: 'question-group', label: 'Radio-group' },
 
@@ -483,6 +482,57 @@ const handleAddSection = () => {
                                         />
                                       </div>
                                     )}
+                                   {field.id.startsWith("select") && (
+  <div className="space-y-2 mt-1">
+    <label className="block text-sm font-medium mb-1">Label du menu:</label>
+    <input
+      type="text"
+      value={field.label}
+      onChange={(e) => updateField(section.id, index, { label: e.target.value })}
+      className="w-full border p-2 rounded"
+    />
+
+    <label className="block mt-3 text-sm font-medium">Options:</label>
+    {field.options?.map((opt, optIndex) => (
+      <div key={optIndex} className="flex items-center gap-2 mb-1">
+        <input
+          type="text"
+          value={opt}
+          onChange={(e) => {
+            const updated = [...(field.options || [])]
+            updated[optIndex] = e.target.value
+            updateField(section.id, index, { options: updated })
+          }}
+          className="border px-2 py-1 rounded w-full"
+        />
+        <button
+          onClick={() => {
+            const updated = field.options?.filter((_, i) => i !== optIndex) || []
+            updateField(section.id, index, { options: updated })
+          }}
+          className="text-red-500 text-sm"
+        >
+          ❌
+        </button>
+      </div>
+    ))}
+
+    <button
+      onClick={() => {
+        const existingOptions = field.options ?? [];
+const updated = [...existingOptions, `Option ${existingOptions.length + 1}`];
+updateField(section.id, index, { options: updated });
+
+        updateField(section.id, index, { options: updated })
+      }}
+      className="text-blue-600 text-sm mt-2 hover:underline"
+    >
+      ➕ Ajouter une option
+    </button>
+  </div>
+)}
+
+
                                   
 
 {field.id.startsWith("question-group") && (
@@ -699,6 +749,7 @@ const handleAddSection = () => {
 )}
 
 
+
                                     {field.id.startsWith("button") && (
                                       <button
                                         type="button"
@@ -888,6 +939,19 @@ const handleAddSection = () => {
     />
   </div>
 )}
+{field.id.startsWith("select") && (
+  <div className="my-4">
+    <label className="block font-medium mb-1">{field.label}</label>
+    <select className="border p-2 rounded w-full">
+      {field.options?.map((opt, i) => (
+        <option key={i} value={opt}>
+          {opt}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
+
 
 {field.id.startsWith("question-group") && (
   <div className="space-y-4 mt-2 border p-4 rounded bg-gray-50">
