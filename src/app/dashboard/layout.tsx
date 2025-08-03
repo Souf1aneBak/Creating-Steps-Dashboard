@@ -8,7 +8,7 @@ import Footer from '@/components/dashboard/Footer';
 export default function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   const router = useRouter();
 

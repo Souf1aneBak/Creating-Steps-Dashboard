@@ -16,13 +16,13 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [role, setRole] = useState<string | null>(null);
 
-  // Read sessionStorage only on client after mount
+  
   useEffect(() => {
     setRole(sessionStorage.getItem('userRole'));
   }, []);
 
   if (!role) {
-    // You can render a loading state or null until role is loaded from sessionStorage
+    
     return null;
   }
 

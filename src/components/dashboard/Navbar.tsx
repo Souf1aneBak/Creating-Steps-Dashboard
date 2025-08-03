@@ -1,13 +1,21 @@
 'use client';
 import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
 export default function Navbar() {
   const router = useRouter();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleLogout = () => {
     sessionStorage.removeItem('userRole');
     router.push('/login');
   };
+
+  if (!isClient) return null; 
 
   return (
     <header className="bg-white shadow-sm">
