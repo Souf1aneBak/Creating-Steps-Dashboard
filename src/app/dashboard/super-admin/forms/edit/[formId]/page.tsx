@@ -5,6 +5,7 @@ import { useEffect, useState, ChangeEvent } from 'react';
 
 interface Field {
   id: string;
+   field_id: string;  
   label: string;
   type: string;
   options?: string[];
@@ -43,7 +44,8 @@ export default function EditFormPage() {
       try {
         const res = await fetch(`http://localhost:3001/api/forms/${formId}`);
         if (!res.ok) throw new Error('Failed to fetch form');
-        const data: FormType = await res.json();
+       const data: FormType = await res.json();
+console.log('Fetched form data:', data);
         setForm(data);
       } catch (error) {
         console.error('Failed to fetch form:', error);
@@ -176,7 +178,7 @@ export default function EditFormPage() {
                   />
 
                   {/* Checkbox field */}
-                  {field.type === 'checkbox' && (
+                  {field.field_id?.startsWith('checkbox') && (
                     <div>
                       <label>Question:</label>
                       <input
@@ -249,7 +251,7 @@ export default function EditFormPage() {
                   )}
 
                   {/* Radio field */}
-                  {fieldIdStr.startsWith('radio') && (
+                  {field.field_id?.startsWith('radio') && (
                     <div className="space-y-2">
                       <label className="block text-sm font-medium mb-1">Question:</label>
                       <input
@@ -322,7 +324,7 @@ export default function EditFormPage() {
                   )}
 
                   {/* Select field */}
-                  {fieldIdStr.startsWith('select') && (
+                  {field.field_id?.startsWith('select')  && (
                     <div className="space-y-2 mt-1">
                       <label className="block text-sm font-medium mb-1">Label du menu:</label>
                       <input

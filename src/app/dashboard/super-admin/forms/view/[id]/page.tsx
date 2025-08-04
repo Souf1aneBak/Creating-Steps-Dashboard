@@ -10,6 +10,7 @@ interface FieldOption {
 
 interface Field {
   id: string;
+  field_id: string; 
   label: string;
   options?: FieldOption[];
   showOtherOption?: boolean;
@@ -98,7 +99,7 @@ export default function PreviewFormPage() {
                 <div key={index} className="mb-4">
                   <label className="block font-medium mb-1">{field.label}</label>
 
-                  {fieldIdStr.startsWith('text') && (
+                  {field.field_id?.startsWith('text') && (
                     <input
                       type="text"
                       placeholder="Entrez votre réponse"
@@ -106,7 +107,7 @@ export default function PreviewFormPage() {
                     />
                   )}
 
-                  {fieldIdStr.startsWith('checkbox') && (
+                  {field.field_id?.startsWith('checkbox')&& (
                     <div className="space-y-1">
                       {field.options?.map((opt, i) => (
                         <label key={i} className="flex items-center gap-2">
@@ -123,7 +124,7 @@ export default function PreviewFormPage() {
                     </div>
                   )}
 
-                  {fieldIdStr.startsWith('radio') && (
+                  {field.field_id?.startsWith('radio') && (
                     <div className="space-y-1">
                       {field.options?.map((opt, i) => (
                         <label key={i} className="flex items-center gap-2">
@@ -140,7 +141,7 @@ export default function PreviewFormPage() {
                     </div>
                   )}
 
-                  {fieldIdStr.startsWith('time') && (
+                  {field.field_id?.startsWith('time') && (
                     <div className="flex gap-2 mt-2">
                       <input
                         type="date"
@@ -173,7 +174,7 @@ export default function PreviewFormPage() {
                     </div>
                   )}
 
-                  {fieldIdStr.startsWith('select') && (
+                  {field.field_id?.startsWith('select') && (
                     <select className="border p-2 rounded w-full">
                       {field.options?.map((opt, i) => (
                         <option key={i} value={opt.value}>
@@ -184,7 +185,7 @@ export default function PreviewFormPage() {
                     </select>
                   )}
 
-                  {fieldIdStr.startsWith('question-group') && (
+                  {field.field_id?.startsWith('question-group') && (
                     <div className="space-y-4 mt-2 border p-4 rounded bg-gray-50">
                       <div className="flex gap-4 mb-4">
                         <label className="flex items-center gap-1">
@@ -275,7 +276,7 @@ export default function PreviewFormPage() {
                     </div>
                   )}
 
-                  {fieldIdStr.startsWith('button') && (
+                  {field.field_id?.startsWith('button') && (
                     <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
                       {field.label || 'Soumettre'}
                     </button>
