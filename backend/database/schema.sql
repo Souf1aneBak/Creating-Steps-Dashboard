@@ -1,0 +1,44 @@
+DROP TABLE IF EXISTS users;
+
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  fullName VARCHAR(100),
+  email VARCHAR(100),
+  password VARCHAR(100),
+  role VARCHAR(50)
+);
+CREATE TABLE forms (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  description TEXT ,
+  createdBy VARCHAR(255) NOT NULL,
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE sections (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  form_id INT NOT NULL,
+  section_id VARCHAR(255) NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  FOREIGN KEY (form_id) REFERENCES forms(id) ON DELETE CASCADE
+);
+
+CREATE TABLE fields (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  section_id INT NOT NULL,
+  field_id VARCHAR(255) NOT NULL,
+  label VARCHAR(255) NOT NULL,
+  type VARCHAR(100),
+  required BOOLEAN DEFAULT FALSE,
+  showOtherOption BOOLEAN DEFAULT FALSE,
+  FOREIGN KEY (section_id) REFERENCES sections(id) ON DELETE CASCADE
+);
+
+CREATE TABLE field_options (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  field_id INT NOT NULL,
+  option_text VARCHAR(255) NOT NULL,
+  FOREIGN KEY (field_id) REFERENCES fields(id) ON DELETE CASCADE
+);
+INSERT INTO users (fullName, email, password, role)
+VALUES ('Admin User', 'admin@example.com', 'admin123', 'superadmin');

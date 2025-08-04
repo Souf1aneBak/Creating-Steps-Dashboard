@@ -1,6 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { ROLES } from '@/constants/roles';
+
 
 type User = {
   id: string;
@@ -11,16 +12,7 @@ type User = {
 };
 
 export default function UsersManagement() {
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: '1',
-      fullName: 'Admin User',
-      email: 'admin@example.com',
-      password: 'admin123',
-      role: ROLES.SUPERADMIN,
-    },
-  ]);
-  
+  const [users, setUsers] = useState<User[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -30,50 +22,71 @@ export default function UsersManagement() {
     password: '',
     role: ROLES.COMMERCIAL,
   });
-  
-  // Password visibility states
+
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showEditPassword, setShowEditPassword] = useState(false);
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
 
-  const handleCreateUser = () => {
-    setUsers([
-      ...users,
-      {
-        ...newUser,
-        id: Math.random().toString(36).substring(2, 9),
-      },
-    ]);
-    setIsCreating(false);
-    setNewUser({
-      fullName: '',
-      email: '',
-      password: '',
-      role: ROLES.COMMERCIAL,
+  
+  const fetchUsers = async () => {
+  try {
+    const res = await fetch('http://localhost:3001/api/users');
+    const data = await res.json();
+
+   
+    const usersWithEmptyPassword = data.map((user: User) => ({
+      ...user,
+      password: '', 
+    }));
+
+    setUsers(usersWithEmptyPassword);
+  } catch (error) {
+    console.error('Failed to fetch users:', error);
+  }
+};
+
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const handleCreateUser = async () => {
+    await fetch('http://localhost:3001/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newUser),
     });
-    setShowNewPassword(false);
+    setIsCreating(false);
+    fetchUsers();
   };
 
   const handleEditUser = (user: User) => {
-    setCurrentUser(user);
-    setIsEditing(true);
-    setShowEditPassword(false);
-  };
+  setCurrentUser({ ...user, password: '' });
+  setIsEditing(true);
+};
 
-  const handleUpdateUser = () => {
+
+  const handleUpdateUser = async () => {
     if (!currentUser) return;
-    
-    setUsers(users.map(user => 
-      user.id === currentUser.id ? currentUser : user
-    ));
+
+    await fetch(`http://localhost:3001/api/users/${currentUser.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(currentUser),
+    });
     setIsEditing(false);
-    setCurrentUser(null);
+    fetchUsers();
   };
 
-  const handleDeleteUser = (id: string, role: string) => {
+  const handleDeleteUser = async (id: string, role: string) => {
     if (role === ROLES.SUPERADMIN) return;
-    setUsers(users.filter((user) => user.id !== id));
+    await fetch(`http://localhost:3001/api/users/${id}`, {
+      method: 'DELETE',
+    });
+    fetchUsers();
   };
+
+ 
 
   return (
     <div className="p-6">

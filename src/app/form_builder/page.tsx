@@ -147,6 +147,37 @@ const handleAddSection = () => {
       )
     )
   }
+  const saveForm = async () => {
+  try {
+    console.log("Sending form data:", {
+  title: formTitle || "Untitled Form",
+  description: formDescription || "",
+  createdBy:  'superadmin',
+  sections,
+});
+
+
+    const response = await fetch("http://localhost:3001/api/forms", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: formTitle || "Untitled Form",
+        description: formDescription || "",
+        createdBy:  'superadmin',
+        sections, 
+      }),
+    });
+
+    const data = await response.json();
+    console.log("✅ Form saved:", data);
+    alert("Form saved successfully!");
+  } catch (error) {
+    console.error("❌ Error saving form:", error);
+    alert("Failed to save form.");
+  }
+};
 
   return (
     <>
@@ -187,7 +218,7 @@ const handleAddSection = () => {
   <h2 className="text-lg font-bold">📝 Form Builder</h2>
  <div className="flex items-center gap-4">
   <button
-  
+  onClick={saveForm}
   className={`px-4 py-2 rounded text-white bg-indigo-600 hover:bg-indigo-700`}
 >
   💾 Save Form
