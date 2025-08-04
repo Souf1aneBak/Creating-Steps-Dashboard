@@ -18,7 +18,7 @@ export default function SuperAdminDashboard() {
 
   const router = useRouter();
 
-  // Fetch forms from backend on component mount
+  
   useEffect(() => {
     async function fetchForms() {
       try {
@@ -145,7 +145,7 @@ export default function SuperAdminDashboard() {
                 </button>
                 <button
                   onClick={() => {
-                    // Save changes logic here
+                    
                     setEditingFormId(null);
                   }}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"

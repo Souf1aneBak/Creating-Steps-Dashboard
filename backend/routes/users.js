@@ -4,6 +4,18 @@ import bcrypt from 'bcrypt';
 
 const router = express.Router();
 const saltRounds = 10;
+
+const ensureSuperAdminExists = async () => {
+  const [rows] = await pool.query("SELECT COUNT(*) AS count FROM users WHERE role = 'superadmin'");
+  if (rows[0].count === 0) {
+    const hashedPassword = await bcrypt.hash('admin123', saltRounds);
+    await pool.query(
+      'INSERT INTO users (fullName, email, password, role, isProtected) VALUES (?, ?, ?, ?, ?)',
+      ['Super Admin', 'super@admin.com', hashedPassword, 'superadmin', 1]
+    );
+    console.log('✅ Superadmin created with email: super@admin.com and password: admin123');
+  }
+};
 const hash = await bcrypt.hash('admin123', 10);
 console.log(hash);
 
@@ -65,5 +77,5 @@ router.delete('/:id', async (req, res) => {
   res.json({ message: 'User deleted' });
 });
 
-
+export { ensureSuperAdminExists };
 export default router;
