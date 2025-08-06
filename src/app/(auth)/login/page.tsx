@@ -8,40 +8,51 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
+  
+
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
+  setError('');
 
-    try {
-      const res = await fetch('http://localhost:3001/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
+  try {
+    const res = await fetch('http://localhost:3001/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
 
-      if (!res.ok) {
-        setError(data.message || 'Login failed');
-        return;
-      }
+    const data = await res.json();
 
-      // Save role and token/session info
-      sessionStorage.setItem('userRole', data.role);
-      sessionStorage.setItem('userToken', data.token); // if any
-
-      // Redirect based on role
-      if (data.role === 'superadmin') {
-        router.push('/dashboard/super-admin');
-      } else if (data.role === 'commercial') {
-        router.push('/dashboard/commercial');
-      } else if (data.role === 'assistance') {
-        router.push('/dashboard/assistance');
-      } else {
-        router.push('/');
-      }
-    } catch (err) {
-      setError('Network error');
+    if (!res.ok) {
+      setError(data.message || 'Login failed');
+      return;
     }
-  };
+
+    if (data.status === 'otp_required') {
+      // Redirect to OTP verification page with email (or store in sessionStorage)
+      sessionStorage.setItem('pendingEmail', data.email);
+      router.push('/verify-otp');
+      return;
+    }
+
+    // Login successful without OTP
+    sessionStorage.setItem('userRole', data.role);
+    sessionStorage.setItem('userToken', data.token);
+
+    if (data.role === 'superadmin') {
+      router.push('/dashboard/super-admin');
+    } else if (data.role === 'commercial') {
+      router.push('/dashboard/commercial');
+    } else if (data.role === 'assistance') {
+      router.push('/dashboard/assistance');
+    } else {
+      router.push('/');
+    }
+  } catch (err) {
+    setError('Network error');
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">

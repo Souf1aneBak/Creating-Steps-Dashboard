@@ -5,19 +5,26 @@ import bcrypt from 'bcrypt';
 const router = express.Router();
 const saltRounds = 10;
 
-const ensureSuperAdminExists = async () => {
-  const [rows] = await pool.query("SELECT COUNT(*) AS count FROM users WHERE role = 'superadmin'");
-  if (rows[0].count === 0) {
-    const hashedPassword = await bcrypt.hash('admin123', saltRounds);
-    await pool.query(
-      'INSERT INTO users (fullName, email, password, role, isProtected) VALUES (?, ?, ?, ?, ?)',
-      ['Super Admin', 'super@admin.com', hashedPassword, 'superadmin', 1]
+export async function ensureSuperAdminExists() {
+  try {
+    const [rows] = await pool.query(
+      'SELECT * FROM users WHERE role = ? LIMIT 1',
+      ['superadmin']
     );
-    console.log('✅ Superadmin created with email: super@admin.com and password: admin123');
+
+    if (rows.length === 0) {
+      console.log('🛑 No superadmin found. Enabling first-time setup.');
+      global.setupMode = true;
+    } else {
+      console.log('✅ Superadmin exists. Setup mode disabled.');
+      global.setupMode = false;
+    }
+  } catch (error) {
+    console.error('Error checking superadmin:', error);
+    global.setupMode = true;
   }
-};
-const hash = await bcrypt.hash('admin123', 10);
-console.log(hash);
+}
+
 
 router.get('/', async (req, res) => {
   const [users] = await pool.query('SELECT id, fullName, email, role FROM users');
@@ -77,5 +84,5 @@ router.delete('/:id', async (req, res) => {
   res.json({ message: 'User deleted' });
 });
 
-export { ensureSuperAdminExists };
+
 export default router;

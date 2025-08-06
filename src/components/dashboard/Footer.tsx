@@ -8,8 +8,8 @@ export default function Footer() {
         
         {/* Logo */}
         <div className="flex items-center gap-2">
-          <Image src="/logo.png" alt="Logo" width={40} height={40} />
-          <span className="font-semibold text-lg">Venusima</span>
+          <Image src="/ezza.jpg" alt="Logo" width={40} height={40} />
+          <span className="font-semibold text-lg">Ezza_Creative</span>
         </div>
 
         {/* Réseaux sociaux */}
@@ -27,7 +27,7 @@ export default function Footer() {
 
         {/* Copyright */}
         <div className="text-sm text-gray-400 text-center md:text-right">
-          &copy; {new Date().getFullYear()} Venusima. Tous droits réservés.
+          &copy; {new Date().getFullYear()} Ezza. Tous droits réservés.
         </div>
       </div>
     </footer>

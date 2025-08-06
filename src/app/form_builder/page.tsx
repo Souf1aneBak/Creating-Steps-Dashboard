@@ -2,7 +2,7 @@
 import React, { useState } from 'react'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 import Navbar from '@/components/dashboard/Navbar';
-
+import { redirect } from 'next/navigation';
 
 
 
@@ -173,11 +173,20 @@ const handleAddSection = () => {
     const data = await response.json();
     console.log("✅ Form saved:", data);
     alert("Form saved successfully!");
+  redirect('/dashboard/super-admin');
+
   } catch (error) {
     console.error("❌ Error saving form:", error);
     alert("Failed to save form.");
   }
 };
+
+const handleDeleteSection = (sectionId: string) => {
+  setSections((prevSections) =>
+    prevSections.filter((section) => section.id !== sectionId)
+  );
+};
+
 
   return (
     <>
@@ -222,6 +231,7 @@ const handleAddSection = () => {
   className={`px-4 py-2 rounded text-white bg-indigo-600 hover:bg-indigo-700`}
 >
   💾 Save Form
+  
 </button>
 
   <button
@@ -244,6 +254,8 @@ const handleAddSection = () => {
   >
     ➕ Add Section
   </button>
+  
+
 </div>
 
 </div>
@@ -271,34 +283,44 @@ const handleAddSection = () => {
 
 
             <div className="space-y-6">
-              {sections.map((section) => (
-                <div key={section.id} className="bg-gray-50 p-4 rounded shadow">
-                   {!previewMode ? (
-                  <input
-                    type="text"
-                    value={section.title}
-                    onChange={(e) => {
-                      const newTitle = e.target.value
-                      setSections((prev) =>
-                        prev.map((sec) =>
-                          sec.id === section.id ? { ...sec, title: newTitle } : sec
-                        )
-                      )
-                    }}
-                    className="font-semibold mb-2 text-lg w-full border-b border-gray-300 focus:outline-none focus:border-blue-500"
-                  />
-                  ) : (
-                    <h3 className="font-semibold mb-2 text-lg">{section.title}</h3>
-                  )}
+             {sections.map((section) => (
+  <div key={section.id} className="bg-gray-50 p-4 rounded shadow relative">
+    <div className="flex justify-between items-start mb-2">
+      {!previewMode ? (
+        <input
+          type="text"
+          value={section.title}
+          onChange={(e) => {
+            const newTitle = e.target.value;
+            setSections((prev) =>
+              prev.map((sec) =>
+                sec.id === section.id ? { ...sec, title: newTitle } : sec
+              )
+            );
+          }}
+          className="font-semibold text-lg w-full border-b border-gray-300 focus:outline-none focus:border-blue-500"
+        />
+      ) : (
+        <h3 className="font-semibold text-lg">{section.title}</h3>
+      )}
 
+      {!previewMode && (
+        <button
+          onClick={() => handleDeleteSection(section.id)}
+          className="text-red-500 hover:text-red-700 text-sm ml-2"
+        >
+          🗑️
+        </button>
+      )}
+    </div>
 
-                  <Droppable droppableId={`section:${section.id}`}>
-                    {(provided) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.droppableProps}
-                        className="min-h-[50px] bg-white p-3 rounded border"
-                      >
+                 <Droppable droppableId={`section:${section.id}`}>
+  {(provided) => (
+    <div
+      ref={provided.innerRef}
+      {...provided.droppableProps}
+      className="min-h-[50px] bg-white p-3 rounded border"
+    >
                         {section.fields.map((field, index) => (
                           <Draggable key={field.id} draggableId={field.id} index={index}>
                             {(provided) => (
