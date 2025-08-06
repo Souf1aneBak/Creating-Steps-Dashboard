@@ -4,7 +4,7 @@ import { useState } from 'react'
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState({
-    siteName: 'Venusima',
+    siteName: 'EZZA',
     footerText: '© 2025 Tous droits réservés.',
     contactEmail: 'contact@venusima.com',
     socialLinks: {

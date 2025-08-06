@@ -40,5 +40,4 @@ CREATE TABLE field_options (
   option_text VARCHAR(255) NOT NULL,
   FOREIGN KEY (field_id) REFERENCES fields(id) ON DELETE CASCADE
 );
-INSERT INTO users (fullName, email, password, role)
-VALUES ('Admin User', 'admin@example.com', 'admin123', 'superadmin');
+

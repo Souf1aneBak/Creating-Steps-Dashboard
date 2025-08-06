@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
 const superAdminLinks = [
   { name: 'Dashboard', href: '/dashboard/super-admin', icon: '🏠' },
   { name: 'Users', href: '/dashboard/super-admin/users-management', icon: '👥' },
-  { name: 'Commande Clients', href: '/dashboard/super-admin/commercial', icon: '💼' },
+  { name: 'Commande Clients', href: '/dashboard/super-admin/CommandeClient', icon: '💼' },
   { name: 'Settings', href: '/dashboard/super-admin/settings', icon: '⚙️' },
 ];
 
