@@ -146,25 +146,7 @@ console.log('Current logoSrc:', logoSrc);
       <input name="socialLinks.linkedin" value={settings.socialLinks.linkedin} onChange={handleChange} placeholder="Lien LinkedIn" className="w-full border p-2 rounded mb-2" />
 
       <button onClick={saveSettings} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded">Save Settings</button>
-      <button onClick={() => {
-  fetch('http://localhost:3001/api/settings')
-    .then(res => res.json())
-    .then(data => {
-      console.log('Fetched settings (refresh button):', data);
-      const normalizedSettings = {
-        ...data,
-        socialLinks: {
-          facebook: data.facebook || '',
-          instagram: data.instagram || '',
-          twitter: data.twitter || '',
-          linkedin: data.linkedin || ''
-        }
-      };
-      setSettings(normalizedSettings);
-    });
-}} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded">
-  Refresh 
-</button>
+      
 
 
 
