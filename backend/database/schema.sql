@@ -41,3 +41,16 @@ CREATE TABLE field_options (
   FOREIGN KEY (field_id) REFERENCES fields(id) ON DELETE CASCADE
 );
 
+CREATE TABLE settings (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    siteName VARCHAR(255) DEFAULT 'EZZA',
+    footerText VARCHAR(255) DEFAULT '© 2025 Tous droits réservés.',
+    contactEmail VARCHAR(255),
+    phone VARCHAR(50),
+    address VARCHAR(255),
+    facebook VARCHAR(255),
+    instagram VARCHAR(255),
+    twitter VARCHAR(255),
+    linkedin VARCHAR(255)
+);
+ALTER TABLE settings ADD COLUMN logoUrl VARCHAR(255);

@@ -6,11 +6,15 @@ import authRouter from './routes/auth.js';
 import formRoutes from './routes/forms.js'; 
 import dotenv from 'dotenv';
 import setupRouter from './routes/setup.js'; 
+import settingsRouter from './routes/settings.js';
+import path from 'path';
 
 const app = express();
 dotenv.config();
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(process.cwd(), 'public')));
+
 
 
 await ensureSuperAdminExists();
@@ -40,6 +44,8 @@ if (global.setupMode) {
 app.use('/api/users', usersRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/forms', formRoutes);
+app.use('/api/settings', settingsRouter);
+
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
