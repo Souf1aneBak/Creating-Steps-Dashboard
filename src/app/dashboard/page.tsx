@@ -8,7 +8,13 @@ export default function DashboardPage() {
   if (role === 'superadmin') {
     redirect('/dashboard/super-admin');
   }
-  // Add other role redirects here
+  if (role === 'commercial') {
+    redirect('/dashboard/commercial');
+  }
+  if (role === 'assistance') {
+    redirect('/dashboard/assistance');
+  }
+  
   
   return null; // Temporary fallback
 }

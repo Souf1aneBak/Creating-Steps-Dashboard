@@ -1,17 +1,22 @@
 import express from 'express';
+import bodyParser from 'body-parser';
 import cors from 'cors';
 import pool from './config/db.js';
+
 import usersRouter, { ensureSuperAdminExists } from './routes/users.js';
 import authRouter from './routes/auth.js';
 import formRoutes from './routes/forms.js'; 
 import dotenv from 'dotenv';
 import setupRouter from './routes/setup.js'; 
 import settingsRouter from './routes/settings.js';
+import formResponsesRouter from './routes/formResponses.js';
+import clientsRouter from './routes/clients.js';
 import path from 'path';
 
 const app = express();
 dotenv.config();
 app.use(cors());
+app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.static(path.join(process.cwd(), 'public')));
 
@@ -45,7 +50,8 @@ app.use('/api/users', usersRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/forms', formRoutes);
 app.use('/api/settings', settingsRouter);
-
+app.use('/api/clients', clientsRouter);
+app.use('/api/form-responses', formResponsesRouter);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

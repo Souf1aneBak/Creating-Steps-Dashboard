@@ -54,3 +54,38 @@ CREATE TABLE settings (
     linkedin VARCHAR(255)
 );
 ALTER TABLE settings ADD COLUMN logoUrl VARCHAR(255);
+
+CREATE TABLE form_responses (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  form_id INT NOT NULL,
+  submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  answers JSON NOT NULL
+);
+ALTER TABLE form_responses
+ALTER TABLE form_responses ADD COLUMN status VARCHAR(50) DEFAULT 'pending';
+
+CREATE TABLE clients (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  companyName VARCHAR(255),
+  legalForm VARCHAR(100),
+  registrationNumber VARCHAR(100),
+  vatNumber VARCHAR(100),
+  industry VARCHAR(100),
+  foundingDate DATE,
+  address TEXT,
+  city VARCHAR(100),
+  postalCode VARCHAR(50),
+  country VARCHAR(100),
+  phone VARCHAR(50),
+  email VARCHAR(100),
+  website VARCHAR(255),
+  description TEXT,
+  employees VARCHAR(50),
+  revenue VARCHAR(50),
+  ceoName VARCHAR(100),
+  contactPerson VARCHAR(100)
+);
+
+ALTER TABLE form_responses
+ADD COLUMN client_id INT,
+ADD FOREIGN KEY (client_id) REFERENCES clients(id);

@@ -5,28 +5,54 @@ import { usePathname } from 'next/navigation';
 import { ROLES } from '@/constants/roles';
 import { useState, useEffect } from 'react';
 
-const superAdminLinks = [
+interface LinkItem {
+  name: string;
+  href: string;
+  icon: string;
+}
+
+const superAdminLinks: LinkItem[] = [
   { name: 'Dashboard', href: '/dashboard/super-admin', icon: '🏠' },
   { name: 'Users', href: '/dashboard/super-admin/users-management', icon: '👥' },
   { name: 'Commande Clients', href: '/dashboard/super-admin/CommandeClient', icon: '💼' },
+  { name: 'Form Responses', href: '/dashboard/super-admin/forms/responses', icon: '📝' },
   { name: 'Settings', href: '/dashboard/super-admin/settings', icon: '⚙️' },
+];
+
+const commercialLinks: LinkItem[] = [
+  { name: 'Dashboard', href: '/dashboard/commercial', icon: '🏠' },
+  { name: 'Commande Clients', href: '/dashboard/commercial/commande_client', icon: '💼' },
+  { name: 'Form Responses', href: '/dashboard/commercial/forms/responses', icon: '📝' },
+  { name: 'Generate Reports / Quotes', href: '/dashboard/commercial/reports', icon: '📊' },
+  { name: 'Export Data', href: '/dashboard/commercial/export', icon: '⬇️' },
+  { name: 'Status Tracking', href: '/dashboard/commercial/status-tracking', icon: '⏳' },
+  
+];
+
+const assistantLinks: LinkItem[] = [
+  { name: 'View Submitted Forms', href: '/dashboard/assistant/forms/submitted', icon: '📋' },
+  { name: 'Moderate Responses', href: '/dashboard/assistant/forms/moderate', icon: '✅' },
+  { name: 'Manage Tasks', href: '/dashboard/assistant/tasks', icon: '📝' },
+  { name: 'Data Cleanup & Reports', href: '/dashboard/assistant/data-cleanup', icon: '🧹' },
+  { name: 'Notifications & Reminders', href: '/dashboard/assistant/notifications', icon: '🔔' },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const [role, setRole] = useState<string | null>(null);
 
-  
   useEffect(() => {
-    setRole(sessionStorage.getItem('userRole'));
+    setRole(sessionStorage.getItem('userRole')); 
   }, []);
 
   if (!role) {
-    
-    return null;
+    return null; 
   }
 
-  const links = role === ROLES.SUPERADMIN ? superAdminLinks : [];
+  let links: LinkItem[] = [];
+  if (role === ROLES.SUPERADMIN) links = superAdminLinks;
+  else if (role === ROLES.COMMERCIAL) links = commercialLinks;
+  else if (role === ROLES.ASSISTANCE) links = assistantLinks;
 
   return (
     <aside className="w-64 bg-white border-r min-h-screen flex flex-col">
@@ -54,7 +80,13 @@ export default function Sidebar() {
             <div className="flex items-center">
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-700">
-                  {role === ROLES.SUPERADMIN ? 'Super Admin' : role}
+                  {role === ROLES.SUPERADMIN
+                    ? 'Super Admin'
+                    : role === ROLES.COMMERCIAL
+                    ? 'Commercial'
+                    : role === ROLES.ASSISTANCE
+                    ? 'Assistant'
+                    : role}
                 </p>
               </div>
             </div>
