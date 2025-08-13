@@ -2,7 +2,8 @@
 import React, { useState } from 'react'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 import Navbar from '@/components/dashboard/Navbar';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+
 
 
 
@@ -55,7 +56,7 @@ const [selectedConditional, setSelectedConditional] = useState<{ [key: string]: 
 const [previewRadioSelection, setPreviewRadioSelection] = useState<string | null>(null);
 const [previewCheckedOptions, setPreviewCheckedOptions] = useState<number[]>([]);
 const [previewInputValues, setPreviewInputValues] = useState<{ [key: string]: string }>({});
-
+const router = useRouter();
 const [previewRadioSelections, setPreviewRadioSelections] = useState<{ [key: string]: string }>({});
 
 
@@ -173,7 +174,7 @@ const handleAddSection = () => {
     const data = await response.json();
     console.log("✅ Form saved:", data);
     alert("Form saved successfully!");
-  redirect('/dashboard/super-admin');
+  router.push('/dashboard/super-admin');
 
   } catch (error) {
     console.error("❌ Error saving form:", error);
@@ -332,31 +333,32 @@ const handleDeleteSection = (sectionId: string) => {
                               >
                                 <div className="flex justify-between items-start gap-2">
                                   <div className="w-full">
-                                     {!previewMode ? (
-                                      
-                                    <input
-                                      type="text"
-                                      value={field.label}
-                                      onChange={(e) => {
-                                        const updatedSections = sections.map((s) =>
-                                          s.id === section.id
-                                            ? {
-                                                ...s,
-                                                fields: s.fields.map((f, i) =>
-                                                  i === index ? { ...f, label: e.target.value } : f
-                                                ),
-                                              }
-                                            : s
-                                        )
-                                        setSections(updatedSections)
-                                      }}
-                                      className="font-medium text-sm text-gray-800 mb-1 w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500"
-                                   />
-                                    ) : (
-                                      <p className="text-sm font-medium text-gray-800 mb-2">
-                                        {field.label}
-                                      </p>
-                                    )}
+                                    {!previewMode ? (
+  <input
+    type="text"
+    value={field.label}
+    onChange={(e) => {
+      const updatedSections = sections.map((s) =>
+        s.id === section.id
+          ? {
+              ...s,
+              fields: s.fields.map((f, i) =>
+                i === index ? { ...f, label: e.target.value } : f
+              ),
+            }
+          : s
+      );
+      setSections(updatedSections);
+    }}
+    className="font-medium text-sm text-gray-800 mb-1 w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500"
+  />
+) : (
+  !field.id.startsWith("button") && (
+    <p className="text-sm font-medium text-gray-800 mb-2">
+      {field.label}
+    </p>
+  )
+)}
 
                                     {field.id.startsWith("text") && (
                                       <input

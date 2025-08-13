@@ -41,6 +41,22 @@ CREATE TABLE field_options (
   FOREIGN KEY (field_id) REFERENCES fields(id) ON DELETE CASCADE
 );
 
+CREATE TABLE conditional_options (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  field_id INT NOT NULL,
+  option_text VARCHAR(255) NOT NULL,
+  radio_question VARCHAR(255),           
+  radio_options TEXT,                    
+  FOREIGN KEY (field_id) REFERENCES fields(id) ON DELETE CASCADE
+);
+
+CREATE TABLE conditional_inputs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  conditional_option_id INT NOT NULL,
+  label VARCHAR(255) NOT NULL,
+  FOREIGN KEY (conditional_option_id) REFERENCES conditional_options(id) ON DELETE CASCADE
+);
+
 CREATE TABLE settings (
     id INT PRIMARY KEY AUTO_INCREMENT,
     siteName VARCHAR(255) DEFAULT 'EZZA',

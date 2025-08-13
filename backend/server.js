@@ -10,8 +10,10 @@ import dotenv from 'dotenv';
 import setupRouter from './routes/setup.js'; 
 import settingsRouter from './routes/settings.js';
 import formResponsesRouter from './routes/formResponses.js';
+import reportRouter from './routes/reports.js';
 import clientsRouter from './routes/clients.js';
 import path from 'path';
+import supportRoutes from './routes/support.js';
 
 const app = express();
 dotenv.config();
@@ -52,6 +54,9 @@ app.use('/api/forms', formRoutes);
 app.use('/api/settings', settingsRouter);
 app.use('/api/clients', clientsRouter);
 app.use('/api/form-responses', formResponsesRouter);
+app.use('/api/reports', reportRouter);
+app.use(supportRoutes);
+
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

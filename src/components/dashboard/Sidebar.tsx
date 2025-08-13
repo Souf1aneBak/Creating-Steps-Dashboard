@@ -79,15 +79,7 @@ export default function Sidebar() {
           <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
             <div className="flex items-center">
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-700">
-                  {role === ROLES.SUPERADMIN
-                    ? 'Super Admin'
-                    : role === ROLES.COMMERCIAL
-                    ? 'Commercial'
-                    : role === ROLES.ASSISTANCE
-                    ? 'Assistant'
-                    : role}
-                </p>
+                
               </div>
             </div>
           </div>

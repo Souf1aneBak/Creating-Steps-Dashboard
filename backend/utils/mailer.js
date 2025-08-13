@@ -9,12 +9,10 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
- // logger: true,  // correct place here
- // debug: true,   // correct place here
 });
 
+export default transporter;  
 
-// ✅ Named export
 export async function sendOtpEmail(to, otp) {
   await transporter.sendMail({
     from: process.env.EMAIL_USER,

@@ -46,8 +46,29 @@ router.post('/', async (req, res) => {
             [fieldId, option]
           );
         }
-      }
+        for (const condOpt of field.conditionalOptions || []) {
+    const [condOptResult] = await connection.query(
+      'INSERT INTO conditional_options (field_id, option_text, radio_question, radio_options) VALUES (?, ?, ?, ?)',
+      [
+        fieldId,
+        condOpt.option,
+        condOpt.radioQuestion || null,
+        condOpt.radioOptions ? JSON.stringify(condOpt.radioOptions) : null,
+      ]
+    );
+    const condOptId = condOptResult.insertId;
+
+    // Insert inputs for each conditional option
+    for (const input of condOpt.inputs || []) {
+      await connection.query(
+        'INSERT INTO conditional_inputs (conditional_option_id, label) VALUES (?, ?)',
+        [condOptId, input.label]
+      );
     }
+  }
+}
+      }
+  
 
     await connection.commit();
     return { success: true, formId };
@@ -70,10 +91,40 @@ router.get('/:id', async (req, res) => {
 
   for (const section of sections) {
     const [fields] = await pool.query('SELECT * FROM fields WHERE section_id = ?', [section.id]);
+
     for (const field of fields) {
+      // Fetch normal options
       const [options] = await pool.query('SELECT * FROM field_options WHERE field_id = ?', [field.id]);
-      
       field.options = options.map(o => o.option_text);
+
+      // Fetch conditional options
+      const [conditionalOptions] = await pool.query(
+        'SELECT id, option_text, radio_question, radio_options FROM conditional_options WHERE field_id = ?',
+        [field.id]
+      );
+
+      // For each conditional option, fetch inputs
+      for (const condOpt of conditionalOptions) {
+  const [inputs] = await pool.query(
+    'SELECT label FROM conditional_inputs WHERE conditional_option_id = ?',
+    [condOpt.id]
+  );
+  condOpt.inputs = inputs; // array of { label: string }
+  condOpt.radioOptions = condOpt.radio_options ? JSON.parse(condOpt.radio_options) : [];
+  condOpt.option = condOpt.option_text;
+  
+  // Rename properties to camelCase for frontend
+  condOpt.radioQuestion = condOpt.radio_question;  // add this line
+  delete condOpt.radio_question;  // remove snake_case property
+  
+  // Clean up unused properties for frontend consistency
+  delete condOpt.option_text;
+  delete condOpt.radio_options;
+  delete condOpt.id;
+}
+
+
+      field.conditionalOptions = conditionalOptions;
     }
     section.fields = fields;
   }
@@ -93,12 +144,20 @@ router.put('/:id', async (req, res) => {
   try {
     await connection.beginTransaction();
 
-   
+    // Update form info
     await connection.query('UPDATE forms SET title=?, description=? WHERE id=?', [title, description, id]);
 
-   
+    // Delete existing related data
     await connection.query(
       'DELETE fo FROM field_options fo JOIN fields f ON fo.field_id = f.id JOIN sections s ON f.section_id = s.id WHERE s.form_id = ?',
+      [id]
+    );
+    await connection.query(
+      'DELETE ci FROM conditional_inputs ci JOIN conditional_options co ON ci.conditional_option_id = co.id JOIN fields f ON co.field_id = f.id JOIN sections s ON f.section_id = s.id WHERE s.form_id = ?',
+      [id]
+    );
+    await connection.query(
+      'DELETE co FROM conditional_options co JOIN fields f ON co.field_id = f.id JOIN sections s ON f.section_id = s.id WHERE s.form_id = ?',
       [id]
     );
     await connection.query(
@@ -107,7 +166,7 @@ router.put('/:id', async (req, res) => {
     );
     await connection.query('DELETE FROM sections WHERE form_id = ?', [id]);
 
-   
+    // Insert new sections, fields, options, conditional options, and inputs
     for (const section of sections) {
       const [sectionResult] = await connection.query(
         'INSERT INTO sections (form_id, section_id, title) VALUES (?, ?, ?)',
@@ -122,11 +181,33 @@ router.put('/:id', async (req, res) => {
         );
         const fieldId = fieldResult.insertId;
 
+        // Insert field options
         for (const option of field.options || []) {
           await connection.query(
             'INSERT INTO field_options (field_id, option_text) VALUES (?, ?)',
             [fieldId, option]
           );
+        }
+
+        // Insert conditional options and their inputs
+        for (const condOpt of field.conditionalOptions || []) {
+          const [condOptResult] = await connection.query(
+            'INSERT INTO conditional_options (field_id, option_text, radio_question, radio_options) VALUES (?, ?, ?, ?)',
+            [
+              fieldId,
+              condOpt.option,
+              condOpt.radioQuestion || null,
+              condOpt.radioOptions ? JSON.stringify(condOpt.radioOptions) : null,
+            ]
+          );
+          const condOptId = condOptResult.insertId;
+
+          for (const input of condOpt.inputs || []) {
+            await connection.query(
+              'INSERT INTO conditional_inputs (conditional_option_id, label) VALUES (?, ?)',
+              [condOptId, input.label]
+            );
+          }
         }
       }
     }
@@ -141,6 +222,7 @@ router.put('/:id', async (req, res) => {
     connection.release();
   }
 });
+
 
 
 

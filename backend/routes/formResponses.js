@@ -1,5 +1,6 @@
 import express from 'express';
 import pool from '../config/db.js';
+import PDFDocument from 'pdfkit';
 
 const router = express.Router();
 
@@ -115,6 +116,4 @@ router.get('/client/:clientId', async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch form responses for client' });
   }
 });
-
-
 export default router;
