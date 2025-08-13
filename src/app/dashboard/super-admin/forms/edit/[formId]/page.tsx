@@ -207,6 +207,7 @@ export default function EditFormPage() {
             className="bg-white p-4 rounded shadow mb-6 border border-gray-200"
           >
             <label className="block text-sm font-medium mb-2">Section Title</label>
+            
             <input
               type="text"
               value={section.title}
@@ -220,6 +221,7 @@ export default function EditFormPage() {
 
               return (
                 <div key={field.id} className="mb-4 relative">
+                   
                   <label className="block text-sm font-medium mb-1">Field Label</label>
                   <input
                     type="text"
@@ -229,7 +231,7 @@ export default function EditFormPage() {
                     }
                     className="w-full border rounded px-3 py-2 mb-2"
                   />
-
+                   
                   {/* Checkbox field */}
                   {field.field_id?.startsWith('checkbox') && (
                     <div>
@@ -610,7 +612,7 @@ export default function EditFormPage() {
                     </div>
                   )}
                    
-                  {/* Delete field button */}
+                 {/* Delete field button */}
                   <button
                     type="button"
                     onClick={() => {
@@ -624,7 +626,7 @@ export default function EditFormPage() {
                       );
                       setForm({ ...form, sections: updatedSections });
                     }}
-                    className="text-red-600 hover:text-red-800 text-sm absolute top-2 right-2"
+                    className="text-red-500 ml-2 text-sm"
                     title="Delete field"
                   >
                     🗑️

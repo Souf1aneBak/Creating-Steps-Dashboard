@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ROLES } from '@/constants/roles';
 import { useState, useEffect } from 'react';
 
 interface LinkItem {
@@ -26,7 +25,6 @@ const commercialLinks: LinkItem[] = [
   { name: 'Generate Reports / Quotes', href: '/dashboard/commercial/reports', icon: '📊' },
   { name: 'Export Data', href: '/dashboard/commercial/export', icon: '⬇️' },
   { name: 'Status Tracking', href: '/dashboard/commercial/status-tracking', icon: '⏳' },
-  
 ];
 
 const assistantLinks: LinkItem[] = [
@@ -40,50 +38,63 @@ const assistantLinks: LinkItem[] = [
 export default function Sidebar() {
   const pathname = usePathname();
   const [role, setRole] = useState<string | null>(null);
+  const [isOpen, setIsOpen] = useState(true); 
 
   useEffect(() => {
-    setRole(sessionStorage.getItem('userRole')); 
+    setRole(sessionStorage.getItem('userRole'));
   }, []);
 
-  if (!role) {
-    return null; 
-  }
+  if (!role) return null;
 
   let links: LinkItem[] = [];
-  if (role === ROLES.SUPERADMIN) links = superAdminLinks;
-  else if (role === ROLES.COMMERCIAL) links = commercialLinks;
-  else if (role === ROLES.ASSISTANCE) links = assistantLinks;
+  if (role === 'superadmin') links = superAdminLinks;
+  else if (role === 'commercial') links = commercialLinks;
+  else if (role === 'assistance') links = assistantLinks;
+
+ 
+  const isActive = (href: string) => pathname.startsWith(href);
 
   return (
-    <aside className="w-64 bg-white border-r min-h-screen flex flex-col">
-      <div className="hidden md:flex md:flex-shrink-0">
-        <div className="flex flex-col w-64 h-screen border-r border-gray-200 bg-white">
-          <div className="h-0 flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
-            <div className="flex-1 px-3 space-y-1">
-              {links.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
-                    pathname === item.href
-                      ? 'bg-blue-100 text-blue-600'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  }`}
-                >
-                  <span className="mr-3 text-lg">{item.icon}</span>
-                  {item.name}
-                </Link>
-              ))}
-            </div>
-          </div>
-          <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
-            <div className="flex items-center">
-              <div className="ml-3">
-                
-              </div>
-            </div>
-          </div>
+    <aside className={`bg-white border-r min-h-screen flex flex-col transition-all duration-300
+      ${isOpen ? 'w-64' : 'w-16'} 
+      shadow-md`}>
+      <div className="flex flex-col h-full">
+        <div className="flex items-center justify-between px-4 py-4 border-b">
+          <h2 className={`font-bold text-lg text-blue-700 ${isOpen ? 'block' : 'hidden'}`}>
+            Menu
+          </h2>
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            aria-label="Toggle sidebar"
+            className="text-gray-500 hover:text-blue-600 focus:outline-none"
+          >
+            {isOpen ? '⬅️' : '➡️'}
+          </button>
         </div>
+
+        <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
+          {links.map((item) => (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={`group flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium
+                transition-colors duration-200
+                ${isActive(item.href)
+                  ? 'bg-blue-100 text-blue-600'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-blue-600'}
+                `}
+              aria-current={isActive(item.href) ? 'page' : undefined}
+              title={isOpen ? undefined : item.name}
+            >
+              <span className="text-lg">{item.icon}</span>
+              {isOpen && item.name}
+            </Link>
+          ))}
+        </nav>
+
+        <footer className="p-4 border-t text-xs text-gray-400 text-center">
+          &copy; {new Date().getFullYear()} Ezza_Creative
+        </footer>
       </div>
     </aside>
   );

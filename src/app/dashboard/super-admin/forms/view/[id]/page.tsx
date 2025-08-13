@@ -49,7 +49,7 @@ export default function PreviewFormPage() {
   const [previewCheckedOptions, setPreviewCheckedOptions] = useState<Record<string, number[]>>({});
   const [previewInputValues, setPreviewInputValues] = useState<Record<string, Record<string, string>>>({});
   const [previewRadioSelections, setPreviewRadioSelections] = useState<Record<string, Record<string, string>>>({});
-
+ 
   useEffect(() => {
     if (!id) return;
 
@@ -98,20 +98,50 @@ export default function PreviewFormPage() {
             {section.fields.map((field, index) => {
               return (
                 <div key={field.id} className="mb-4">
-                  <label className="block font-medium mb-1">{field.label}</label>
+                  
 
                   {/* Text Input */}
                   {field.field_id?.startsWith('text') && (
+                    <><label className="block font-medium mb-1">{field.label}</label>
                     <input
                       type="text"
                       placeholder="Entrez votre réponse"
                       className="border px-3 py-2 rounded w-full"
                     />
+                    </>
                   )}
+                  {field.field_id?.startsWith('email') && (
+  <div className="space-y-1">
+  <label className="block font-medium mb-2">{field.label}</label>
+    
+    <input
+      type="email"
+      placeholder="Entrez votre email"
+      className="border px-3 py-2 rounded w-full"
+      disabled={false}
+    />
+  </div>
+)}
+
+{/* Preview version for Phone Input */}
+{field.field_id?.startsWith('phone') && (
+  <div className="space-y-1">
+  <label className="block font-medium mb-2">{field.label}</label>
+   
+    <input
+      type="tel"
+      placeholder="Entrez votre numéro de téléphone"
+      className="border px-3 py-2 rounded w-full"
+      disabled={false}
+    />
+  </div>
+)}
+
 
                   {/* Checkbox Group */}
                   {field.field_id?.startsWith('checkbox') && (
                     <div className="space-y-1">
+                      <label className="block font-medium mb-1">{field.label}</label>
                       {field.options?.map((opt, i) => (
                         <label key={i} className="flex items-center gap-2">
                           <input type="checkbox" />
@@ -129,7 +159,9 @@ export default function PreviewFormPage() {
 
                   {/* Radio Group */}
                   {field.field_id?.startsWith('radio') && (
+                    
                     <div className="space-y-1">
+                      <label className="block font-medium mb-1">{field.label}</label>
                       {field.options?.map((opt, i) => (
                         <label key={i} className="flex items-center gap-2">
                           <input type="radio" name={`radio-${section.id}-${index}`} />
@@ -148,7 +180,7 @@ export default function PreviewFormPage() {
                   {/* Time Input */}
                   {field.field_id?.startsWith('time') && (
                     <div className="flex gap-2 mt-2">
-                      {/* You probably want to manage timeValues state here */}
+                     
                       <input
                         type="date"
                         className="border px-3 py-2 rounded w-1/2"
@@ -162,13 +194,16 @@ export default function PreviewFormPage() {
 
                   {/* Select Input */}
                   {field.field_id?.startsWith('select') && (
+                    <> <label className="block font-medium mb-1">{field.label}</label>
                     <select className="border p-2 rounded w-full">
+                      
                       {field.options?.map((opt, i) => (
                         <option key={i} value={opt}>
                           {opt}
                         </option>
                       ))}
                     </select>
+                    </>
                   )}
 
              {field.field_id?.startsWith('question-group') && (
@@ -284,6 +319,90 @@ export default function PreviewFormPage() {
       ))}
   </div>
 )}
+{field.field_id === 'yes_no' && (
+  <div className="border p-4 rounded bg-gray-50 mt-4">
+    <label className="block font-medium mb-2">{field.label}</label>
+
+    {/* Radio options from DB (fallback to Oui/Non if none exist) */}
+    <div className="flex gap-4 mb-4">
+      {(field.conditionalOptions?.length
+        ? field.conditionalOptions
+        : [{ option: 'Oui' }, { option: 'Non' }]
+      ).map((opt, idx) => (
+        <label key={idx} className="flex items-center gap-1">
+          <input
+            type="radio"
+            name={`yesno-${field.id}`}
+            checked={previewRadioSelection[field.id] === opt.option}
+            onChange={() =>
+              setPreviewRadioSelection(prev => ({ ...prev, [field.id]: opt.option }))
+            }
+          />
+          {opt.option}
+        </label>
+      ))}
+    </div>
+
+    {/* Follow-ups for the selected option */}
+    {field.conditionalOptions?.map((opt, optIdx) =>
+      previewRadioSelection[field.id] === opt.option ? (
+        <div key={optIdx} className="space-y-3 ml-6">
+          {/* If your yes/no has extra text inputs */}
+          {opt.inputs?.map((input, inputIdx) => (
+            <div key={inputIdx}>
+              {input.label && (
+                <label className="block text-sm font-medium mb-1">{input.label}</label>
+              )}
+              <input
+                type="text"
+                className="border rounded px-2 py-1 w-full"
+                placeholder="Réponse"
+                value={previewInputValues[field.id]?.[`${optIdx}-${inputIdx}`] || ''}
+                onChange={(e) =>
+                  setPreviewInputValues(prev => ({
+                    ...prev,
+                    [field.id]: {
+                      ...(prev[field.id] || {}),
+                      [`${optIdx}-${inputIdx}`]: e.target.value,
+                    },
+                  }))
+                }
+              />
+            </div>
+          ))}
+
+          {/* Optional nested radio question (if you stored it) */}
+          {opt.radioQuestion && (
+            <div className="mt-4 space-y-2 border-t pt-2">
+              <p className="font-medium">{opt.radioQuestion}</p>
+              {opt.radioOptions?.map((rOpt, rIdx) => (
+                <label key={rIdx} className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name={`yesno-followup-${field.id}-${optIdx}`}
+                    checked={previewRadioSelections[field.id]?.[`${optIdx}`] === rOpt}
+                    onChange={() =>
+                      setPreviewRadioSelections(prev => ({
+                        ...prev,
+                        [field.id]: {
+                          ...(prev[field.id] || {}),
+                          [`${optIdx}`]: rOpt,
+                        },
+                      }))
+                    }
+                  />
+                  <span>{rOpt}</span>
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : null
+    )}
+  </div>
+)}
+
+
 
                   {/* Submit button */}
                   {field.field_id?.startsWith('button') && (

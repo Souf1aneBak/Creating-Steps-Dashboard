@@ -17,8 +17,8 @@ const TOOLBOX_ELEMENTS = [
   { id: 'textarea', label: 'Textarea' },
   { id: 'time', label: 'Time Input' },
   { id: 'select', label: 'Dropdown Select' },
-  { id: 'number', label: 'Number Input' },
   { id: 'question-group', label: 'Radio-group' },
+   { id: 'yes_no', label: 'Radio-yes_no' },
 
 ]
 
@@ -58,6 +58,7 @@ const [previewCheckedOptions, setPreviewCheckedOptions] = useState<number[]>([])
 const [previewInputValues, setPreviewInputValues] = useState<{ [key: string]: string }>({});
 const router = useRouter();
 const [previewRadioSelections, setPreviewRadioSelections] = useState<{ [key: string]: string }>({});
+const [previewExtraInput, setPreviewExtraInput] = useState('');
 
 
 const [checkedOptions, setCheckedOptions] = useState<{
@@ -97,7 +98,16 @@ const handleAddSection = () => {
           ...(dragged.id === 'checkbox' || dragged.id === 'radio' ? {
             options: ['Option 1', 'Option 2', 'Option 3'],
             showOtherOption: false,
-          } : {})
+          } : {}),
+          ...(dragged.id.startsWith('yes_no') ? {
+    conditionalOptions: [{
+      option: "Yes",
+      inputs: [{ label: "Elaboration", value: "" }],
+      radioQuestion: "Pourquoi ?",
+      radioOptions: ["Yes", "No"],
+      radioSelection: "",
+    }]
+  } : {})
         }
 
         setSections((prev) =>
@@ -148,39 +158,36 @@ const handleAddSection = () => {
       )
     )
   }
-  const saveForm = async () => {
-  try {
-    console.log("Sending form data:", {
-  title: formTitle || "Untitled Form",
-  description: formDescription || "",
-  createdBy:  'superadmin',
-  sections,
-});
-
-
-    const response = await fetch("http://localhost:3001/api/forms", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+   const saveForm = async () => {
+    try {
+      console.log("Sending form data:", {
         title: formTitle || "Untitled Form",
         description: formDescription || "",
-        createdBy:  'superadmin',
-        sections, 
-      }),
-    });
+        createdBy: 'superadmin',
+        sections,
+      });
 
-    const data = await response.json();
-    console.log("✅ Form saved:", data);
-    alert("Form saved successfully!");
-  router.push('/dashboard/super-admin');
+      const response = await fetch("http://localhost:3001/api/forms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: formTitle || "Untitled Form",
+          description: formDescription || "",
+          createdBy: 'superadmin',
+          sections,
+        }),
+      });
 
-  } catch (error) {
-    console.error("❌ Error saving form:", error);
-    alert("Failed to save form.");
-  }
-};
+      const data = await response.json();
+      console.log("✅ Form saved:", data);
+      alert("Form saved successfully!");
+
+      router.push('/dashboard/super-admin'); // This should now work
+    } catch (error) {
+      console.error("❌ Error saving form:", error);
+      alert("Failed to save form.");
+    }
+  };
 
 const handleDeleteSection = (sectionId: string) => {
   setSections((prevSections) =>
@@ -333,41 +340,84 @@ const handleDeleteSection = (sectionId: string) => {
                               >
                                 <div className="flex justify-between items-start gap-2">
                                   <div className="w-full">
-                                    {!previewMode ? (
-  <input
-    type="text"
-    value={field.label}
-    onChange={(e) => {
-      const updatedSections = sections.map((s) =>
-        s.id === section.id
-          ? {
-              ...s,
-              fields: s.fields.map((f, i) =>
-                i === index ? { ...f, label: e.target.value } : f
-              ),
-            }
-          : s
-      );
-      setSections(updatedSections);
-    }}
-    className="font-medium text-sm text-gray-800 mb-1 w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500"
-  />
-) : (
-  !field.id.startsWith("button") && (
-    <p className="text-sm font-medium text-gray-800 mb-2">
-      {field.label}
-    </p>
-  )
+                                    
+
+
+                                  {field.id.startsWith('text') && (
+  <div className="space-y-1">
+    {!previewMode ? (
+      <input
+        type="text"
+        value={field.label}
+        onChange={(e) =>
+          updateField(section.id, index, { label: e.target.value })
+        }
+        className="font-medium text-sm mb-1 w-full border-b border-gray-300 focus:outline-none focus:border-blue-500"
+        placeholder="Label for text input"
+      />
+    ) : (
+      <label className="block text-sm font-medium mb-1">{field.label}</label>
+    )}
+
+    <input
+      type="text"
+      placeholder="Entrez votre réponse"
+      className="border px-3 py-2 rounded w-full"
+      disabled
+    />
+  </div>
 )}
 
-                                    {field.id.startsWith("text") && (
-                                      <input
-                                        type="text"
-                                        placeholder="Enter text"
-                                        className="w-full px-3 py-2 border rounded mt-1"
-                                        disabled
-                                      />
-                                    )}
+{field.id.startsWith('email') && (
+  <div className="space-y-1">
+    {!previewMode ? (
+      <input
+        type="text"
+        value={field.label}
+        onChange={(e) =>
+          updateField(section.id, index, { label: e.target.value })
+        }
+        className="font-medium text-sm mb-1 w-full border-b border-gray-300 focus:outline-none focus:border-blue-500"
+        placeholder="Label for email input"
+      />
+    ) : (
+      <label className="block text-sm font-medium mb-1">{field.label}</label>
+    )}
+
+    <input
+      type="email"
+      placeholder="Entrez votre email"
+      className="border px-3 py-2 rounded w-full"
+      disabled
+    />
+  </div>
+)}
+
+{field.id.startsWith('phone') && (
+  <div className="space-y-1">
+    {!previewMode ? (
+      <input
+        type="text"
+        value={field.label}
+        onChange={(e) =>
+          updateField(section.id, index, { label: e.target.value })
+        }
+        className="font-medium text-sm mb-1 w-full border-b border-gray-300 focus:outline-none focus:border-blue-500"
+        placeholder="Label for phone input"
+      />
+    ) : (
+      <label className="block text-sm font-medium mb-1">{field.label}</label>
+    )}
+
+    <input
+      type="tel"
+      placeholder="Entrez votre numéro de téléphone"
+      className="border px-3 py-2 rounded w-full"
+      disabled
+    />
+  </div>
+)}
+
 
                                     {field.id.startsWith("checkbox") && (
                                       <div className="space-y-2 mt-1">
@@ -522,6 +572,85 @@ const handleDeleteSection = (sectionId: string) => {
                                         </div>
                                       </div>
                                     )}
+                                     {field.id.startsWith("yes_no") && (
+  <div className="space-y-2 mt-1">
+    <label className="block text-sm font-medium mb-1">Question:</label>
+    <input
+      type="text"
+      value={field.label}
+      onChange={(e) => updateField(section.id, index, { label: e.target.value })}
+      className="w-full border p-2 rounded"
+    />
+
+    <label className="block mt-3 text-sm font-medium">Options:</label>
+    <div className="flex items-center gap-4 mb-1">
+      {field.conditionalOptions?.[0]?.radioOptions?.map((option) => (
+        <label key={option} className="flex items-center gap-1">
+          <input
+            type="radio"
+            name={`radio-${field.id}`}
+            checked={field.conditionalOptions?.[0]?.radioSelection === option}
+            onChange={() => {
+              if (!field.conditionalOptions) return;
+
+              
+              const newConditionalOptions = [...field.conditionalOptions];
+              newConditionalOptions[0] = {
+                ...newConditionalOptions[0],
+                radioSelection: option,
+               
+                inputs: option.toLowerCase() === "no"
+                  ? [{ label: "Elaboration", value: "" }]
+                  : newConditionalOptions[0].inputs ?? [{ label: "Elaboration", value: "" }],
+              };
+
+              updateField(section.id, index, {
+                conditionalOptions: newConditionalOptions,
+              });
+            }}
+          />
+          {option}
+        </label>
+      ))}
+    </div>
+
+    {field.conditionalOptions?.[0]?.radioSelection?.toLowerCase() === "yes" && (
+      <div>
+        <label className="block text-sm font-medium mb-1">
+          {field.conditionalOptions?.[0]?.radioQuestion || "Veuillez préciser :"}
+        </label>
+        <input
+          type="text"
+          value={field.conditionalOptions?.[0]?.inputs?.[0]?.value || ""}
+          onChange={(e) => {
+            if (!field.conditionalOptions) return;
+
+            const newConditionalOptions = [...field.conditionalOptions];
+            const currentInputs = newConditionalOptions[0].inputs
+              ? [...newConditionalOptions[0].inputs]
+              : [{ label: "Elaboration", value: "" }];
+
+            currentInputs[0] = { ...currentInputs[0], value: e.target.value };
+
+            newConditionalOptions[0] = {
+              ...newConditionalOptions[0],
+              inputs: currentInputs,
+            };
+
+            updateField(section.id, index, {
+              conditionalOptions: newConditionalOptions,
+            });
+          }}
+          placeholder="Expliquez pourquoi..."
+          className="w-full border p-2 rounded"
+          disabled
+        />
+      </div>
+    )}
+  </div>
+)}
+
+
 
                                     {field.id.startsWith("time") && (
                                       <div className="flex gap-2 mt-2">
@@ -624,37 +753,93 @@ updateField(section.id, index, { options: updated });
         </label>
       </div>
     </div>
+{field.conditionalOptions && field.conditionalOptions.length > 0 && (
+  <div className="mt-4">
+    
+    <div className="mb-4 border p-3 rounded bg-white">
+      <label className="block mb-2 font-medium">input:</label>
+      <input
+        type="text"
+        value={field.conditionalOptions[0].inputs?.[0]?.value || ''}
+        onChange={(e) => {
+          
+          const updatedOptions = [...field.conditionalOptions];
+          const firstOption = { ...updatedOptions[0] };
+          firstOption.inputs = [...(firstOption.inputs || [])];
 
-    {field.conditionalOptions && (
-      <div className="mt-4">
-        {field.conditionalOptions.map((opt, optIdx) => (
-          <div key={optIdx} className="mb-4 border p-3 rounded bg-white">
-            <label className="flex items-center gap-2 mb-2">
-              <input
-                type="checkbox"
-                checked={checkedOptions[field.id]?.includes(optIdx) || false}
-                onChange={() => {
-                  setCheckedOptions((prev) => {
-                    const prevList = prev[field.id] || [];
-                    const newList = prevList.includes(optIdx)
-                      ? prevList.filter((i) => i !== optIdx)
-                      : [...prevList, optIdx];
-                    return { ...prev, [field.id]: newList };
-                  });
-                }}
-              />
-              <input
-                type="text"
-                value={opt.option}
-                onChange={(e) => {
-                  const updatedOptions = [...field.conditionalOptions!];
-                  updatedOptions[optIdx].option = e.target.value;
-                  updateField(section.id, index, { conditionalOptions: updatedOptions });
-                }}
-                className="border px-2 py-1 rounded w-full"
-              />
+          if (!firstOption.inputs[0]) {
+            firstOption.inputs[0] = { label: '', value: '' };
+          }
+
+          firstOption.inputs[0] = {
+            ...firstOption.inputs[0],
+            value: e.target.value,
+          };
+
+          updatedOptions[0] = firstOption;
+
+          updateField(section.id, index, { conditionalOptions: updatedOptions });
+        }}
+        className="w-full border p-2 rounded"
+        placeholder="Enter extra info"
+      />
+    </div>
+
+    {/* Now render the rest of the conditionalOptions as checkbox options */}
+    {field.conditionalOptions.map((opt, optIdx) => (
+      <div key={optIdx} className="mb-4 border p-3 rounded bg-white">
+        
+        <label className="flex items-center gap-2 mb-2">
+          
+
+          <input
+            type="checkbox"
+            checked={checkedOptions[field.id]?.includes(optIdx) || false}
+            onChange={() => {
+              setCheckedOptions((prev) => {
+                const prevList = prev[field.id] || [];
+                const newList = prevList.includes(optIdx)
+                  ? prevList.filter((i) => i !== optIdx)
+                  : [...prevList, optIdx];
+                return { ...prev, [field.id]: newList };
+              });
+            }}
+            
+          />
+          
+          <input
+            type="text"
+            value={opt.option}
+            onChange={(e) => {
+              const updatedOptions = [...field.conditionalOptions!];
+              updatedOptions[optIdx] = {
+                ...updatedOptions[optIdx],
+                option: e.target.value,
+              };
+              updateField(section.id, index, { conditionalOptions: updatedOptions });
+            }}
+            className="border px-2 py-1 rounded w-full"
+          />
+          <button
+  type="button"
+  onClick={() => {
+    const updatedOptions = field.conditionalOptions.filter(
+      (_, i) => i !== optIdx
+    );
+    updateField(section.id, index, { conditionalOptions: updatedOptions });
+    
+    setCheckedOptions((prev) => {
+      const newChecked = prev[field.id]?.filter((i) => i !== optIdx) || [];
+      return { ...prev, [field.id]: newChecked };
+    });
+  }}
+  className="text-red-500 ml-2 text-sm"
+  title="Delete this option"
+>
+  🗑️
+</button>
             </label>
-
+           
            
             {checkedOptions[field.id]?.includes(optIdx) && (
               <div className="mt-2 pl-6 space-y-4">
@@ -665,7 +850,7 @@ updateField(section.id, index, { options: updated });
                       <input
                         type="text"
                         placeholder="Input label"
-                        value={inputItem.label}
+                        
                         onChange={(e) => {
                           const updatedOptions = [...field.conditionalOptions!];
                           updatedOptions[optIdx].inputs[inputIdx].label = e.target.value;
@@ -676,8 +861,9 @@ updateField(section.id, index, { options: updated });
                     </label>
                     <input
                       type="text"
-                      placeholder="Enter input"
+                      
                       className="border px-2 py-1 rounded w-full"
+                      disabled
                       value={inputItem.value}
                       onChange={(e) => {
                         const updatedOptions = [...field.conditionalOptions!];
@@ -751,7 +937,7 @@ updateField(section.id, index, { options: updated });
             }}
             className="text-red-600 hover:underline text-sm"
           >
-            Delete
+            🗑️
           </button>
         </div>
       ))}
@@ -805,15 +991,31 @@ updateField(section.id, index, { options: updated });
 
 
 
-                                    {field.id.startsWith("button") && (
-                                      <button
-                                        type="button"
-                                        className="bg-blue-500 text-white px-4 py-2 rounded cursor-not-allowed mt-1"
-                                        disabled
-                                      >
-                                        {field.label}
-                                      </button>
-                                    )}
+       {field.id.startsWith("button") &&  (
+  <div className="space-y-1">
+    <label className="block text-sm font-medium mb-1">Button Label</label>
+    <input
+      type="text"
+      value={field.label}
+      onChange={(e) => {
+        const updatedSections = sections.map((s) =>
+          s.id === section.id
+            ? {
+                ...s,
+                fields: s.fields.map((f, i) =>
+                  i === index ? { ...f, label: e.target.value } : f
+                ),
+              }
+            : s
+        );
+        setSections(updatedSections);
+      }}
+      className="font-medium text-sm mb-1 w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500"
+    />
+  </div>
+)}
+
+
                                   </div>
 
                                   <button
@@ -903,20 +1105,54 @@ updateField(section.id, index, { options: updated });
 
           {section.fields.map((field, index) => (
             <div key={index} className="mb-4">
-              <label className="block font-medium mb-1">
-                {field.label}
-              </label>
+              
+              {/* Preview version for Text Input */}
+{field.id.startsWith('text') && (
+  <div className="space-y-1">
+  <label className="block font-medium mb-2">{field.label}</label>
+    
+    <input
+      type="text"
+      placeholder="Entrez votre réponse"
+      className="border px-3 py-2 rounded w-full"
+      disabled={false} 
+    />
+  </div>
+)}
 
-              {field.id.startsWith('text') && (
-                <input
-                  type="text"
-                  placeholder="Entrez votre réponse"
-                  className="border px-3 py-2 rounded w-full"
-                />
-              )}
+{/* Preview version for Email Input */}
+{field.id.startsWith('email') && (
+  <div className="space-y-1">
+  <label className="block font-medium mb-2">{field.label}</label>
+    
+    <input
+      type="email"
+      placeholder="Entrez votre email"
+      className="border px-3 py-2 rounded w-full"
+      disabled={false}
+    />
+  </div>
+)}
+
+{/* Preview version for Phone Input */}
+{field.id.startsWith('phone') && (
+  <div className="space-y-1">
+  <label className="block font-medium mb-2">{field.label}</label>
+   
+    <input
+      type="tel"
+      placeholder="Entrez votre numéro de téléphone"
+      className="border px-3 py-2 rounded w-full"
+      disabled={false}
+    />
+  </div>
+)}
+
 
               {field.id.startsWith('checkbox') && (
                 <div className="space-y-1">
+  <label className="block font-medium mb-2">{field.label}</label>
+
                   {field.options?.map((opt, i) => (
                     <label key={i} className="flex items-center gap-2">
                       <input type="checkbox" />
@@ -937,7 +1173,10 @@ updateField(section.id, index, { options: updated });
               )}
 
               {field.id.startsWith('radio') && (
+
                 <div className="space-y-1">
+  <label className="block font-medium mb-2">{field.label}</label>
+
                   {field.options?.map((opt, i) => (
                     <label key={i} className="flex items-center gap-2">
                       <input
@@ -964,6 +1203,7 @@ updateField(section.id, index, { options: updated });
               )}
               {field.id.startsWith("time") && (
   <div className="flex gap-2 mt-2">
+    
     <input
       type="date"
       className="border px-3 py-2 rounded w-1/2"
@@ -996,7 +1236,8 @@ updateField(section.id, index, { options: updated });
 )}
 {field.id.startsWith("select") && (
   <div className="my-4">
-    <label className="block font-medium mb-1">{field.label}</label>
+  <label className="block font-medium mb-2">{field.label}</label>
+    
     <select className="border p-2 rounded w-full">
       {field.options?.map((opt, i) => (
         <option key={i} value={opt}>
@@ -1034,6 +1275,17 @@ updateField(section.id, index, { options: updated });
       </label>
     </div>
 
+    {/* Extra input shown only if Oui is selected */}
+    {previewRadioSelection === "Oui" && (
+  <div className="mb-4 ml-6">
+    
+    <div className="border rounded px-2 py-1 w-full bg-gray-100 text-gray-700">
+      {field.conditionalOptions?.[0]?.inputs?.[0]?.value || "(No input)"}
+    </div>
+  </div>
+)}
+
+
     {/* Options shown only if Oui is selected */}
     {previewRadioSelection === "Oui" && field.conditionalOptions && (
       <div className="space-y-3 ml-6">
@@ -1059,9 +1311,7 @@ updateField(section.id, index, { options: updated });
               <div className="mt-2 space-y-4 pl-6">
                 {opt.inputs?.map((input, inputIdx) => (
                   <div key={inputIdx}>
-                    {input.label && (
-                      <label className="block text-sm font-medium mb-1">{input.label}</label>
-                    )}
+                    {input.label }
                     <input
                       type="text"
                       className="border rounded px-2 py-1 w-full"
@@ -1108,15 +1358,78 @@ updateField(section.id, index, { options: updated });
   </div>
 )}
 
+{field.id.startsWith("yes_no") && (
+  <div className="space-y-2 mt-1 p-4 border rounded bg-white">
+  <label className="block font-medium mb-2">{field.label}</label>
+   
 
-              {field.id.startsWith('button') && (
-                <button
-                  type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-                >
-                  {field.label || 'Soumettre'}
-                </button>
-              )}
+    <div className="flex items-center gap-6">
+      {field.conditionalOptions?.[0]?.radioOptions?.map((option) => (
+        <label key={option} className="flex items-center gap-1">
+          <input
+            type="radio"
+            name={`preview-radio-${field.id}`}
+            checked={field.conditionalOptions?.[0]?.radioSelection === option}
+            onChange={() => {
+              
+              const updatedCondOpts = field.conditionalOptions ? [...field.conditionalOptions] : [{
+                option: "Yes",
+                inputs: [{ label: "Elaboration", value: "" }],
+                radioQuestion: "Pourquoi ?",
+                radioOptions: ["Yes", "No"],
+                radioSelection: "",
+              }];
+
+              updatedCondOpts[0].radioSelection = option;
+
+              updateField(section.id, index, { conditionalOptions: updatedCondOpts });
+            }}
+          />
+          {option}
+        </label>
+      ))}
+    </div>
+
+    {field.conditionalOptions?.[0]?.radioSelection?.toLowerCase() === "yes" && (
+      <input
+        type="text"
+        className="mt-2 w-full border p-2 rounded"
+        placeholder={field.conditionalOptions?.[0]?.radioQuestion || "Please elaborate..."}
+        value={field.conditionalOptions?.[0]?.inputs?.[0]?.value || ""}
+        onChange={(e) => {
+          const updatedCondOpts = field.conditionalOptions ? [...field.conditionalOptions] : [{
+            option: "Yes",
+            inputs: [{ label: "Elaboration", value: "" }],
+            radioQuestion: "Pourquoi ?",
+            radioOptions: ["Yes", "No"],
+            radioSelection: "Yes",
+          }];
+
+          if (!updatedCondOpts[0].inputs) {
+            updatedCondOpts[0].inputs = [{ label: "Elaboration", value: "" }];
+          }
+
+          updatedCondOpts[0].inputs[0].value = e.target.value;
+
+          updateField(section.id, index, { conditionalOptions: updatedCondOpts });
+        }}
+      />
+    )}
+
+   
+
+  </div>
+)}
+
+
+              {field.id.startsWith("button") && (
+  <button
+    type="submit"
+    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+  >
+    {field.label || "Soumettre"}
+  </button>
+)}
             </div>
           ))}
         </div>
