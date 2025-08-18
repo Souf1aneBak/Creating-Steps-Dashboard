@@ -13,26 +13,26 @@ interface LinkItem {
 const superAdminLinks: LinkItem[] = [
   { name: 'Dashboard', href: '/dashboard/super-admin', icon: '🏠' },
   { name: 'Users', href: '/dashboard/super-admin/users-management', icon: '👥' },
+  { name: 'filling forms', href: '/dashboard/super-admin/forms', icon: '📝' },
   { name: 'Commande Clients', href: '/dashboard/super-admin/CommandeClient', icon: '💼' },
-  { name: 'Form Responses', href: '/dashboard/super-admin/forms/responses', icon: '📝' },
+   { name: 'Clients', href: '/dashboard/super-admin/ClientsManagement', icon: '👥' },
   { name: 'Settings', href: '/dashboard/super-admin/settings', icon: '⚙️' },
 ];
 
 const commercialLinks: LinkItem[] = [
   { name: 'Dashboard', href: '/dashboard/commercial', icon: '🏠' },
   { name: 'Commande Clients', href: '/dashboard/commercial/commande_client', icon: '💼' },
-  { name: 'Form Responses', href: '/dashboard/commercial/forms/responses', icon: '📝' },
-  { name: 'Generate Reports / Quotes', href: '/dashboard/commercial/reports', icon: '📊' },
-  { name: 'Export Data', href: '/dashboard/commercial/export', icon: '⬇️' },
-  { name: 'Status Tracking', href: '/dashboard/commercial/status-tracking', icon: '⏳' },
+  { name: 'Clients', href: '/dashboard/commercial/ClientsManagement', icon: '👥' },
+ 
 ];
 
 const assistantLinks: LinkItem[] = [
-  { name: 'View Submitted Forms', href: '/dashboard/assistant/forms/submitted', icon: '📋' },
+  { name: 'Dashboard', href: '/dashboard/assitance/forms', icon: '🏠' },
   { name: 'Moderate Responses', href: '/dashboard/assistant/forms/moderate', icon: '✅' },
-  { name: 'Manage Tasks', href: '/dashboard/assistant/tasks', icon: '📝' },
+  { name: 'Manage Clients', href: '/dashboard/assitance/clients', icon: '👥' },
   { name: 'Data Cleanup & Reports', href: '/dashboard/assistant/data-cleanup', icon: '🧹' },
   { name: 'Notifications & Reminders', href: '/dashboard/assistant/notifications', icon: '🔔' },
+  { name: 'Settings', href: '/dashboard/assitance/settings', icon: '⚙️' },
 ];
 
 export default function Sidebar() {

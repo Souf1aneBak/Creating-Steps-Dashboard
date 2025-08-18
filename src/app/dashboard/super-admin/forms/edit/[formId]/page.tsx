@@ -5,6 +5,8 @@ import { useEffect, useState, ChangeEvent } from 'react';
 
 interface FieldOptionInput {
   label: string;
+  value?: string;
+  dbId?: number;
 }
 
 interface ConditionalOption {
@@ -12,18 +14,20 @@ interface ConditionalOption {
   inputs?: FieldOptionInput[];
   radioQuestion?: string;
   radioOptions?: string[];
+  radioSelection?: string;
 }
 
 interface Field {
   id: string;
+  dbId?: number;
   field_id: string;
   label: string;
-  type: string;
   options?: string[];
+  optionsDbIds?: number[]; 
+  otherOptionDbId?: number[];
   showOtherOption?: boolean;
-  conditionalOptions?: ConditionalOption[]; // add this!
+  conditionalOptions?: ConditionalOption[];
 }
-
 
 interface Section {
   id: string;
@@ -36,9 +40,8 @@ interface FormType {
   title: string;
   description: string;
   sections: Section[];
-  createdBy: string;
-  createdAt?: string;
 }
+
 
 export default function EditFormPage() {
   const params = useParams();
@@ -53,6 +56,12 @@ export default function EditFormPage() {
   const [previewCheckedOptions, setPreviewCheckedOptions] = useState<Record<string, number[]>>({});
   const [previewInputValues, setPreviewInputValues] = useState<Record<string, Record<string, string>>>({});
   const [previewRadioSelections, setPreviewRadioSelections] = useState<Record<string, Record<string, string>>>({});
+  const [sectionsToDelete, setSectionsToDelete] = useState<string[]>([]);
+  const [fieldsToDelete, setFieldsToDelete] = useState<string[]>([]);
+  const [optionsToDelete, setOptionsToDelete] = useState<number[]>([]);
+
+
+
 
   useEffect(() => {
   if (!formId) return;
@@ -148,25 +157,26 @@ export default function EditFormPage() {
     setForm({ ...form, sections: newSections });
   };
 
-  const handleSave = async () => {
-    if (!formId || !form) return;
+ const handleSave = async () => {
+  if (!formId || !form) return;
 
-    try {
-      const res = await fetch(`http://localhost:3001/api/forms/${formId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
+  try {
+    const res = await fetch(`http://localhost:3001/api/forms/${formId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...form, sectionsToDelete,fieldsToDelete,optionsToDelete }),
+    });
 
-      if (!res.ok) throw new Error('Failed to update form');
+    if (!res.ok) throw new Error('Failed to update form');
 
-      alert('Form updated!');
-      router.push('/dashboard');
-    } catch (error) {
-      console.error('Failed to update form:', error);
-      alert('Update failed');
-    }
-  };
+    alert('Form updated!');
+    router.push('/dashboard/super-admin');
+  } catch (error) {
+    console.error('Failed to update form:', error);
+    alert('Update failed');
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gray-100 py-10 px-4">
@@ -204,8 +214,22 @@ export default function EditFormPage() {
         {form.sections.map((section, sIndex) => (
           <div
             key={section.id}
-            className="bg-white p-4 rounded shadow mb-6 border border-gray-200"
+            className="relative bg-white p-4 rounded shadow mb-6 border border-gray-200"
           >
+            {/* Delete section button */}
+   <button
+  type="button"
+  onClick={() => {
+    setSectionsToDelete(prev => [...prev, section.id]); // mark for deletion
+    const updatedSections = form.sections.filter((_, i) => i !== sIndex);
+    setForm({ ...form, sections: updatedSections });
+  }}
+  className="absolute top-2 right-2 text-red-500 hover:text-red-700 text-sm"
+  title="Delete section"
+>
+  🗑️
+</button>
+
             <label className="block text-sm font-medium mb-2">Section Title</label>
             
             <input
@@ -220,17 +244,75 @@ export default function EditFormPage() {
               const fieldIdStr = String(field.id);
 
               return (
+                <div className="relative border p-3 rounded mb-4">
+  
                 <div key={field.id} className="mb-4 relative">
-                   
-                  <label className="block text-sm font-medium mb-1">Field Label</label>
-                  <input
-                    type="text"
-                    value={field.label}
-                    onChange={(e) =>
-                      updateField(section.id, fIndex, { label: e.target.value })
-                    }
-                    className="w-full border rounded px-3 py-2 mb-2"
-                  />
+                   {/* Delete button at top-right */}
+  <button
+  type="button"
+  onClick={() => {
+    // Mark field for deletion
+    setFieldsToDelete(prev => [...prev, field.id]);
+
+    // Remove from frontend state
+    const updatedSections = form.sections.map((s) =>
+      s.id === section.id
+        ? {
+            ...s,
+            fields: s.fields.filter((_, i) => i !== fIndex),
+          }
+        : s
+    );
+    setForm({ ...form, sections: updatedSections });
+  }}
+  className="absolute top-2 right-2 text-red-500 text-sm"
+  title="Delete field"
+>
+  🗑️
+</button>
+
+                  {/* Text Input */}
+{field.field_id?.startsWith('text') && (
+  <div className="space-y-1">
+    <label className="block font-medium mb-1">{field.label}</label>
+    <input
+      type="text"
+      placeholder="Entrez votre réponse"
+      className="border px-3 py-2 rounded w-full"
+      value={field.label} // assuming label is the editable value
+      onChange={(e) => updateField(section.id, fIndex, { label: e.target.value })}
+    />
+  </div>
+)}
+
+{/* Email Input */}
+{field.field_id?.startsWith('email') && (
+  <div className="space-y-1">
+    <label className="block font-medium mb-2">{field.label}</label>
+    <input
+      type="email"
+      placeholder="Entrez votre email"
+      className="border px-3 py-2 rounded w-full"
+      value={field.label} // bind to label or a value property
+      onChange={(e) => updateField(section.id, fIndex, { label: e.target.value })}
+    />
+  </div>
+)}
+
+{/* Phone Input */}
+{field.field_id?.startsWith('phone') && (
+  <div className="space-y-1">
+    <label className="block font-medium mb-2">{field.label}</label>
+    <input
+      type="tel"
+      placeholder="Entrez votre numéro de téléphone"
+      className="border px-3 py-2 rounded w-full"
+      value={field.label} // bind to label or a value property
+      onChange={(e) => updateField(section.id, fIndex, { label: e.target.value })}
+    />
+  </div>
+)}
+
                    
                   {/* Checkbox field */}
                   {field.field_id?.startsWith('checkbox') && (
@@ -260,19 +342,47 @@ export default function EditFormPage() {
                             className="border px-2 py-1 rounded w-full"
                           />
                           <button
-                            type="button"
-                            onClick={() => {
-                              const updatedOptions =
-                                field.options?.filter((_, i) => i !== optIndex) || [];
-                              updateField(section.id, fIndex, { options: updatedOptions });
-                            }}
-                            className="text-red-500 text-sm"
-                          >
-                            ❌
-                          </button>
+  type="button"
+  onClick={() => {
+    if (!field.options) return;
+
+    // Add DB ID of deleted option to optionsToDelete if it exists
+    const optionDbId = field.optionsDbIds?.[optIndex];
+    if (optionDbId) {
+      setOptionsToDelete(prev => [...prev, optionDbId]);
+    }
+
+    // Remove option from field locally
+    const updatedOptions = field.options.filter((_, i) => i !== optIndex);
+    const updatedOptionsDbIds = (field.optionsDbIds || []).filter((_, i) => i !== optIndex);
+
+    updateField(section.id, fIndex, {
+      options: updatedOptions,
+      optionsDbIds: updatedOptionsDbIds,
+    });
+  }}
+  className="text-red-500 text-sm"
+>
+  ❌
+</button>
+
+
                         </div>
                       ))}
-
+                       <button
+                        type="button"
+                        onClick={() => {
+                          const existingOptions = field.options ?? [];
+                          const updated = [
+                            ...existingOptions,
+                            `Option ${existingOptions.length + 1}`,
+                          ];
+                          updateField(section.id, fIndex, { options: updated });
+                        }}
+                        className="text-blue-600 text-sm mt-2 hover:underline"
+                      >
+                        ➕ Ajouter une option
+                      </button>
                       {!field.showOtherOption ? (
                         <button
                           type="button"
@@ -292,14 +402,19 @@ export default function EditFormPage() {
                             value="Autre..."
                           />
                           <button
-                            type="button"
-                            onClick={() =>
-                              updateField(section.id, fIndex, { showOtherOption: false })
-                            }
-                            className="text-red-500 ml-2 text-sm"
-                          >
-                            ❌
-                          </button>
+  type="button"
+  onClick={() => {
+    // Ensure otherOptionDbId exists and is a number
+    if (field.otherOptionDbId != null) {
+      setOptionsToDelete(prev => [...prev, field.otherOptionDbId]);
+    }
+
+    // Update frontend to hide the "Autre" option
+    updateField(section.id, fIndex, { showOtherOption: false });
+  }}
+>
+  ❌
+</button>
                         </div>
                       )}
                     </div>
@@ -333,48 +448,91 @@ export default function EditFormPage() {
                             className="border px-2 py-1 rounded w-full"
                           />
                           <button
-                            type="button"
-                            onClick={() => {
-                              const updatedOptions =
-                                field.options?.filter((_, i) => i !== optIndex) || [];
-                              updateField(section.id, fIndex, { options: updatedOptions });
-                            }}
-                            className="text-red-500 text-sm"
-                          >
-                            ❌
-                          </button>
+  type="button"
+  onClick={() => {
+    if (!field.options) return;
+
+    // Add DB ID of deleted option to optionsToDelete if it exists
+    const optionDbId = field.optionsDbIds?.[optIndex];
+    if (optionDbId) {
+      setOptionsToDelete(prev => [...prev, optionDbId]);
+    }
+
+    // Remove option from field locally
+    const updatedOptions = field.options.filter((_, i) => i !== optIndex);
+    const updatedOptionsDbIds = (field.optionsDbIds || []).filter((_, i) => i !== optIndex);
+
+    updateField(section.id, fIndex, {
+      options: updatedOptions,
+      optionsDbIds: updatedOptionsDbIds,
+    });
+  }}
+  className="text-red-500 text-sm"
+>
+  ❌
+</button>
+
                         </div>
                       ))}
+<button
+  type="button"
+  onClick={() => {
+    const existingOptions = field.options ?? [];
+    const existingDbIds = field.optionsDbIds ?? [];
+
+    // Add new option text
+    const newOptionText = `Option ${existingOptions.length + 1}`;
+    const updatedOptions = [...existingOptions, newOptionText];
+
+    // For a newly added option, push `null` so backend knows it's new
+    const updatedOptionsDbIds = [...existingDbIds, null];
+
+    updateField(section.id, fIndex, {
+      options: updatedOptions,
+      optionsDbIds: updatedOptionsDbIds
+    });
+  }}
+  className="text-blue-600 text-sm mt-2 hover:underline"
+>
+  ➕ Ajouter une option
+</button>
 
                       {!field.showOtherOption ? (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            updateField(section.id, fIndex, { showOtherOption: true })
-                          }
-                          className="text-blue-600 text-sm hover:underline mt-2"
-                        >
-                          ➕ Ajouter une option “Autre”
-                        </button>
-                      ) : (
-                        <div className="flex items-center mt-2">
-                          <input type="radio" disabled />
-                          <input
-                            disabled
-                            className="ml-2 border px-2 py-1 rounded w-full"
-                            value="Autre..."
-                          />
-                          <button
-                            type="button"
-                            onClick={() =>
-                              updateField(section.id, fIndex, { showOtherOption: false })
-                            }
-                            className="text-red-500 ml-2 text-sm"
-                          >
-                            ❌
-                          </button>
-                        </div>
-                      )}
+  <button
+    type="button"
+    onClick={() =>
+      updateField(section.id, fIndex, { showOtherOption: true })
+    }
+    className="text-blue-600 text-sm hover:underline mt-2"
+  >
+    ➕ Ajouter une option “Autre”
+  </button>
+) : (
+  <div className="flex items-center mt-2">
+    <input type="radio" disabled />
+    <input
+      disabled
+      className="ml-2 border px-2 py-1 rounded w-full"
+      value="Autre..."
+    />
+    <button
+  type="button"
+  onClick={() => {
+    // Ensure otherOptionDbId exists and is a number
+    if (field.otherOptionDbId != null) {
+      setOptionsToDelete(prev => [...prev, field.otherOptionDbId]);
+    }
+
+    // Update frontend to hide the "Autre" option
+    updateField(section.id, fIndex, { showOtherOption: false });
+  }}
+>
+  ❌
+</button>
+
+  </div>
+)}
+
                     </div>
                   )}
                   {field.field_id?.startsWith('question-group') && (
@@ -553,12 +711,92 @@ export default function EditFormPage() {
       ))}
   </div>
 )}
+{field.field_id.startsWith("yes_no") && (
+  <div className="space-y-2 mt-1">
+    {/* Question Label */}
+    <label className="block text-sm font-medium mb-1">Question:</label>
+    <input
+      type="text"
+      value={field.label}
+      onChange={(e) =>
+        updateField(section.id, fIndex, { label: e.target.value })
+      }
+      className="w-full border p-2 rounded"
+    />
+
+    {/* Radio Options */}
+    <div className="flex items-center gap-4 mt-2">
+      {field.conditionalOptions?.[0]?.radioOptions?.map((option) => (
+        <label key={option} className="flex items-center gap-1">
+          <input
+            type="radio"
+            name={`radio-${field.id}`}
+            checked={field.conditionalOptions?.[0]?.radioSelection === option}
+            onChange={() => {
+              if (!field.conditionalOptions) return;
+
+              const newConditionalOptions = [...field.conditionalOptions];
+              newConditionalOptions[0] = {
+                ...newConditionalOptions[0],
+                radioSelection: option,
+                // Only keep inputs if "Yes" is selected
+                inputs:
+                  option.toLowerCase() === "yes"
+                    ? newConditionalOptions[0].inputs ?? [{ label: "Elaboration", value: "" }]
+                    : [],
+              };
+
+              updateField(section.id, fIndex, {
+                conditionalOptions: newConditionalOptions,
+              });
+            }}
+          />
+          {option}
+        </label>
+      ))}
+    </div>
+
+    {/* Follow-up input if Yes is selected */}
+    {field.conditionalOptions?.[0]?.radioSelection?.toLowerCase() === "yes" && (
+      <div className="mt-2">
+        <label className="block text-sm font-medium mb-1">
+          {field.conditionalOptions?.[0]?.radioQuestion || "Veuillez préciser :"}
+        </label>
+        <input
+          type="text"
+          value={field.conditionalOptions?.[0]?.inputs?.[0]?.value || ""}
+          onChange={(e) => {
+            if (!field.conditionalOptions) return;
+
+            const newConditionalOptions = [...field.conditionalOptions];
+            const currentInputs = newConditionalOptions[0].inputs
+              ? [...newConditionalOptions[0].inputs]
+              : [{ label: "Elaboration", value: "" }];
+
+            currentInputs[0] = { ...currentInputs[0], value: e.target.value };
+
+            newConditionalOptions[0] = {
+              ...newConditionalOptions[0],
+              inputs: currentInputs,
+            };
+
+            updateField(section.id, fIndex, {
+              conditionalOptions: newConditionalOptions,
+            });
+          }}
+          placeholder="Expliquez pourquoi..."
+          className="w-full border p-2 rounded"
+        />
+      </div>
+    )}
+  </div>
+)}
 
 
                   {/* Select field */}
                   {field.field_id?.startsWith('select')  && (
                     <div className="space-y-2 mt-1">
-                      <label className="block text-sm font-medium mb-1">Label du menu:</label>
+                      <label className="block text-sm font-medium mb-1">Select label:</label>
                       <input
                         type="text"
                         value={field.label}
@@ -581,17 +819,24 @@ export default function EditFormPage() {
                             }}
                             className="border px-2 py-1 rounded w-full"
                           />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const updated =
-                                field.options?.filter((_, i) => i !== optIndex) || [];
-                              updateField(section.id, fIndex, { options: updated });
-                            }}
-                            className="text-red-500 text-sm"
-                          >
-                            ❌
-                          </button>
+                        <button
+  type="button"
+  onClick={() => {
+    // Safely check if DB IDs exist
+    const dbId = field.optionsDbIds?.[optIndex];
+    if (dbId) {
+      setOptionsToDelete(prev => [...prev, dbId]);
+    }
+
+    // Safely update options
+    const updatedOptions = field.options?.filter((_, i) => i !== optIndex) || [];
+    updateField(section.id, fIndex, { options: updatedOptions });
+  }}
+>
+  ❌
+</button>
+
+
                         </div>
                       ))}
 
@@ -612,30 +857,40 @@ export default function EditFormPage() {
                     </div>
                   )}
                    
-                 {/* Delete field button */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const updatedSections = form.sections.map((s) =>
-                        s.id === section.id
-                          ? {
-                              ...s,
-                              fields: s.fields.filter((_, i) => i !== fIndex),
-                            }
-                          : s
-                      );
-                      setForm({ ...form, sections: updatedSections });
-                    }}
-                    className="text-red-500 ml-2 text-sm"
-                    title="Delete field"
-                  >
-                    🗑️
-                  </button>
+                {field.field_id?.startsWith('button') && (
+  <div className="relative border p-3 rounded mb-4">
+    
+    
+
+    {/* Editable button label */}
+    <input
+      type="text"
+      value={field.label}
+      onChange={(e) => updateField(section.id, fIndex, { label: e.target.value })}
+      placeholder="Button label"
+      className="border px-3 py-2 rounded w-full mb-2"
+    />
+
+    {/* Preview of the button */}
+    
+  </div>
+)}
+
+                </div>
                 </div>
               );
+              
             })}
           </div>
         ))}
+        <button
+  type="button"
+  onClick={handleSave}
+  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+>
+  Save Changes
+</button>
+
       </form>
     </div>
   );

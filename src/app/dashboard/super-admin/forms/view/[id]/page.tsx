@@ -12,6 +12,7 @@ interface ConditionalOption {
   inputs?: FieldOptionInput[];
   radioQuestion?: string;
   radioOptions?: string[];
+  radioSelection?: string;
 }
 
 interface Field {
@@ -58,6 +59,7 @@ export default function PreviewFormPage() {
       setError(null);
 
       try {
+        
         const res = await fetch(`http://localhost:3001/api/forms/${id}`);
         if (!res.ok) throw new Error(`Error fetching form: ${res.statusText}`);
         const data: FormType = await res.json();
@@ -319,100 +321,54 @@ export default function PreviewFormPage() {
       ))}
   </div>
 )}
-{field.field_id === 'yes_no' && (
-  <div className="border p-4 rounded bg-gray-50 mt-4">
-    <label className="block font-medium mb-2">{field.label}</label>
 
-    {/* Radio options from DB (fallback to Oui/Non if none exist) */}
-    <div className="flex gap-4 mb-4">
-      {(field.conditionalOptions?.length
-        ? field.conditionalOptions
-        : [{ option: 'Oui' }, { option: 'Non' }]
-      ).map((opt, idx) => (
-        <label key={idx} className="flex items-center gap-1">
+{field.field_id.startsWith("yes_no") && (
+  <div className="space-y-2 mt-1">
+    <label className="block text-sm font-medium mb-1">{field.label}</label>
+
+    <div className="flex items-center gap-4 mb-1">
+      {field.conditionalOptions?.[0]?.radioOptions?.map((option) => (
+        <label key={option} className="flex items-center gap-1">
           <input
             type="radio"
-            name={`yesno-${field.id}`}
-            checked={previewRadioSelection[field.id] === opt.option}
+            name={`radio-${field.id}`}
+            checked={previewRadioSelection[field.id] === option}
             onChange={() =>
-              setPreviewRadioSelection(prev => ({ ...prev, [field.id]: opt.option }))
+              setPreviewRadioSelection(prev => ({ ...prev, [field.id]: option }))
             }
           />
-          {opt.option}
+          {option}
         </label>
       ))}
     </div>
 
-    {/* Follow-ups for the selected option */}
-    {field.conditionalOptions?.map((opt, optIdx) =>
-      previewRadioSelection[field.id] === opt.option ? (
-        <div key={optIdx} className="space-y-3 ml-6">
-          {/* If your yes/no has extra text inputs */}
-          {opt.inputs?.map((input, inputIdx) => (
-            <div key={inputIdx}>
-              {input.label && (
-                <label className="block text-sm font-medium mb-1">{input.label}</label>
-              )}
-              <input
-                type="text"
-                className="border rounded px-2 py-1 w-full"
-                placeholder="Réponse"
-                value={previewInputValues[field.id]?.[`${optIdx}-${inputIdx}`] || ''}
-                onChange={(e) =>
-                  setPreviewInputValues(prev => ({
-                    ...prev,
-                    [field.id]: {
-                      ...(prev[field.id] || {}),
-                      [`${optIdx}-${inputIdx}`]: e.target.value,
-                    },
-                  }))
-                }
-              />
-            </div>
-          ))}
-
-          {/* Optional nested radio question (if you stored it) */}
-          {opt.radioQuestion && (
-            <div className="mt-4 space-y-2 border-t pt-2">
-              <p className="font-medium">{opt.radioQuestion}</p>
-              {opt.radioOptions?.map((rOpt, rIdx) => (
-                <label key={rIdx} className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name={`yesno-followup-${field.id}-${optIdx}`}
-                    checked={previewRadioSelections[field.id]?.[`${optIdx}`] === rOpt}
-                    onChange={() =>
-                      setPreviewRadioSelections(prev => ({
-                        ...prev,
-                        [field.id]: {
-                          ...(prev[field.id] || {}),
-                          [`${optIdx}`]: rOpt,
-                        },
-                      }))
-                    }
-                  />
-                  <span>{rOpt}</span>
-                </label>
-              ))}
-            </div>
-          )}
-        </div>
-      ) : null
+    {previewRadioSelection[field.id]?.toLowerCase() === "yes" && (
+      <div>
+        <label className="block text-sm font-medium mb-1">
+          {field.conditionalOptions?.[0]?.radioQuestion || "Veuillez préciser :"}
+        </label>
+        <input
+          type="text"
+          value={previewInputValues[field.id]?.[`0-0`] || ""}
+          onChange={(e) =>
+            setPreviewInputValues(prev => ({
+              ...prev,
+              [field.id]: { ...(prev[field.id] || {}), [`0-0`]: e.target.value },
+            }))
+          }
+          placeholder="Expliquez pourquoi..."
+          className="w-full border p-2 rounded"
+        />
+      </div>
     )}
   </div>
 )}
 
 
 
+
                   {/* Submit button */}
-                  {field.field_id?.startsWith('button') && (
-                    <button
-                      type="submit"
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-                    >
-                      {field.label || 'Soumettre'}
-                    </button>
-                  )}
+                  
                 </div>
               );
             })}

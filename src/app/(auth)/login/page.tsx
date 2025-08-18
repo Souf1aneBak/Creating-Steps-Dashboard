@@ -41,7 +41,7 @@ export default function Login() {
       } else if (data.role === 'commercial') {
         router.push('/dashboard/commercial');
       } else if (data.role === 'assistance') {
-        router.push('/dashboard/assistance');
+        router.push('/dashboard/assitance');
       } else {
         router.push('/');
       }
@@ -68,17 +68,18 @@ export default function Login() {
           >
             About
           </a>
-          <a
-            href="/login"
-            className="text-gray-600 hover:text-blue-600 transition"
-          >
-            Login
-          </a>
+          
           <a
             href="/contact"
             className="text-gray-600 hover:text-blue-600 transition"
           >
             contact
+          </a>
+          <a
+            href="/login"
+            className="text-gray-600 hover:text-blue-600 transition"
+          >
+            Login
           </a>
         </div>
       </nav>

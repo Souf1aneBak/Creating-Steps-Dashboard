@@ -107,7 +107,6 @@ export default function UsersManagement() {
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Password</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
@@ -117,20 +116,7 @@ export default function UsersManagement() {
               <tr key={user.id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.fullName}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500">
-                  <div className="flex items-center">
-                    {visiblePasswords[user.id] ? user.password : '••••••••'}
-                    <button
-                      onClick={() => setVisiblePasswords(prev => ({
-                        ...prev,
-                        [user.id]: !prev[user.id]
-                      }))}
-                      className="ml-2 text-xs text-blue-600 hover:text-blue-800"
-                    >
-                      {visiblePasswords[user.id] ? 'Hide' : 'Show'}
-                    </button>
-                  </div>
-                </td>
+                
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">{user.role}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 space-x-2">
                   <button
@@ -180,25 +166,7 @@ export default function UsersManagement() {
                   placeholder="user@example.com"
                 />
               </div>
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <label className="block text-sm font-medium text-gray-700">Password</label>
-                  <button
-                    type="button"
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="text-xs text-blue-600 hover:text-blue-800"
-                  >
-                    {showNewPassword ? 'Hide' : 'Show'} Password
-                  </button>
-                </div>
-                <input
-                  type={showNewPassword ? "text" : "password"}
-                  value={newUser.password}
-                  onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  placeholder="Enter password"
-                />
-              </div>
+              
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
                 <select

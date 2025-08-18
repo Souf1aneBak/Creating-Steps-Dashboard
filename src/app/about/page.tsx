@@ -19,17 +19,18 @@ export default function About() {
           >
             About
           </a>
-          <a
-            href="/login"
-            className="text-gray-600 hover:text-blue-600 transition"
-          >
-            Login
-          </a>
+          
           <a
             href="/contact"
             className="text-gray-600 hover:text-blue-600 transition"
           >
             contact
+          </a>
+          <a
+            href="/login"
+            className="text-gray-600 hover:text-blue-600 transition"
+          >
+            Login
           </a>
         </div>
       </nav>

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 type Form = {
-  _id: string;
+  id: string;
   title: string;
   description: string;
 };
@@ -34,13 +34,13 @@ export default function CommercialDashboard() {
       ) : (
         <div className="space-y-4">
           {forms.map((form) => (
-            <div key={form._id} className="bg-white shadow p-4 rounded-lg flex justify-between items-center">
+            <div key={form.id} className="bg-white shadow p-4 rounded-lg flex justify-between items-center">
               <div>
                 <h2 className="font-semibold">{form.title}</h2>
                 <p className="text-gray-600">{form.description}</p>
               </div>
               <div className="space-x-2">
-                <Link href={`/dashboard/commercial/forms/fill/${form._id || form.id}`}
+                <Link href={`/dashboard/commercial/forms/fill/${form.id || form.id}`}
                 className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">
   Fill for Client
 </Link>

@@ -30,7 +30,7 @@ export default function CommercialDashboard() {
       
 
       {forms.length === 0 ? (
-        <p>No forms available for assistant yet.</p>
+        <p>No forms available from Super Admin yet.</p>
       ) : (
         <div className="space-y-4">
           {forms.map((form) => (
@@ -40,7 +40,10 @@ export default function CommercialDashboard() {
                 <p className="text-gray-600">{form.description}</p>
               </div>
               <div className="space-x-2">
-                
+                <Link href={`/dashboard/commercial/forms/fill/${form.id || form.id}`}
+                className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">
+  Fill for Client
+</Link>
 <Link href={`/dashboard/commercial/forms/responses/${form.id}`}
 className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">
   View Responses

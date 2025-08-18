@@ -11,7 +11,6 @@ const TOOLBOX_ELEMENTS = [
   { id: 'text', label: 'Text Input' },
   { id: 'checkbox', label: 'Checkbox' },
   { id: 'radio', label: 'Radio Button' },
-  { id: 'button', label: 'Submit Button' },
   { id: 'email', label: 'Email Input' },
   { id: 'phone', label: 'Phone Input' },
   { id: 'textarea', label: 'Textarea' },
@@ -182,7 +181,7 @@ const handleAddSection = () => {
       console.log("✅ Form saved:", data);
       alert("Form saved successfully!");
 
-      router.push('/dashboard/super-admin'); // This should now work
+      router.push('../dashboard/super-admin'); 
     } catch (error) {
       console.error("❌ Error saving form:", error);
       alert("Failed to save form.");
@@ -641,7 +640,7 @@ const handleDeleteSection = (sectionId: string) => {
               conditionalOptions: newConditionalOptions,
             });
           }}
-          placeholder="Expliquez pourquoi..."
+          placeholder="Veuillez préciser..."
           className="w-full border p-2 rounded"
           disabled
         />
@@ -991,29 +990,7 @@ updateField(section.id, index, { options: updated });
 
 
 
-       {field.id.startsWith("button") &&  (
-  <div className="space-y-1">
-    <label className="block text-sm font-medium mb-1">Button Label</label>
-    <input
-      type="text"
-      value={field.label}
-      onChange={(e) => {
-        const updatedSections = sections.map((s) =>
-          s.id === section.id
-            ? {
-                ...s,
-                fields: s.fields.map((f, i) =>
-                  i === index ? { ...f, label: e.target.value } : f
-                ),
-              }
-            : s
-        );
-        setSections(updatedSections);
-      }}
-      className="font-medium text-sm mb-1 w-full bg-transparent border-b border-gray-300 focus:outline-none focus:border-blue-500"
-    />
-  </div>
-)}
+     
 
 
                                   </div>
@@ -1375,7 +1352,7 @@ updateField(section.id, index, { options: updated });
               const updatedCondOpts = field.conditionalOptions ? [...field.conditionalOptions] : [{
                 option: "Yes",
                 inputs: [{ label: "Elaboration", value: "" }],
-                radioQuestion: "Pourquoi ?",
+                radioQuestion: "Veuillez préciser...",
                 radioOptions: ["Yes", "No"],
                 radioSelection: "",
               }];
@@ -1400,7 +1377,7 @@ updateField(section.id, index, { options: updated });
           const updatedCondOpts = field.conditionalOptions ? [...field.conditionalOptions] : [{
             option: "Yes",
             inputs: [{ label: "Elaboration", value: "" }],
-            radioQuestion: "Pourquoi ?",
+            radioQuestion: "Veuillez préciser...",
             radioOptions: ["Yes", "No"],
             radioSelection: "Yes",
           }];
@@ -1422,14 +1399,7 @@ updateField(section.id, index, { options: updated });
 )}
 
 
-              {field.id.startsWith("button") && (
-  <button
-    type="submit"
-    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-  >
-    {field.label || "Soumettre"}
-  </button>
-)}
+             
             </div>
           ))}
         </div>

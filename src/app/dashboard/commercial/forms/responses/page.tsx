@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState,useRef } from 'react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface FormResponse {
   id: string;
@@ -15,7 +17,7 @@ export default function FormResponsesPage() {
   const [responses, setResponses] = useState<FormResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const formRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     async function fetchResponses() {
       try {
@@ -36,6 +38,24 @@ export default function FormResponsesPage() {
   if (loading) return <p>Loading responses...</p>;
   if (error) return <p className="text-red-600">Error: {error}</p>;
   if (responses.length === 0) return <p>No form responses found.</p>;
+   const handleDownloadPDF = async () => {
+    if (!formRef.current) return;
+
+    const canvas = await html2canvas(formRef.current, {
+      scale: 2, // higher scale = better resolution
+      useCORS: true, // needed if you have images from another domain
+    });
+
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    pdf.save('form.pdf');
+  };
 
   return (
   <div className="p-6 max-w-4xl mx-auto">
@@ -50,14 +70,9 @@ export default function FormResponsesPage() {
     <p className="mt-2 text-gray-700">{answersSummary}</p>
 
     {/* Download PDF Report button */}
-    <a
-      href={`http://localhost:3001/api/reports/generate/${id}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-block mt-3 bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-    >
-      Download Report (PDF)
-    </a>
+    <button onClick={handleDownloadPDF} className="bg-blue-600 text-white px-4 py-2 rounded mt-4">
+        Download PDF
+      </button>
   </li>
 ))}
 
