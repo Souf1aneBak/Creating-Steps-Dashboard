@@ -55,7 +55,7 @@ interface Answer {
   answers: Record<string, any>;
   submittedAt: string;
   status: string; 
-  client_id:number;
+  clientId:number;
 }
 
 function AlertNotification({ 
@@ -192,7 +192,8 @@ export default function FormResponsesPage() {
       });
     }
   }
-  if (loading) return <p>Loading...</p>;
+  if (loading || clients.length === 0) return <p>Loading...</p>;
+
   if (error) return <p className="text-red-600">Error: {error}</p>;
   if (!form) return <p>Form not found</p>;
   if (responses.length === 0) return <p>No responses submitted yet.</p>;
@@ -219,7 +220,12 @@ return (
     {/* Responses Grid */}
     <div className="space-y-8">
       {responses.map((response) => {
-        const client = clients.find(c => c.id === response.client_id);
+        const client = clients.find(c => Number(c.id) === Number(response.clientId));
+
+
+
+
+
 
 
      
@@ -233,9 +239,7 @@ return (
             {/* Response Header */}
             <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
               <div>
-                <h2 className="text-lg font-semibold text-gray-800">
-                  {client ? client.companyName : 'Unknown Client'}
-                </h2>
+               <h2>{client ? client.companyName : `Client ID: ${response.clientId}`}</h2>
                 <div className="flex items-center mt-1 space-x-4">
                   <span className="text-sm text-gray-500">
                 <span className="text-gray-500 text-sm font-medium">

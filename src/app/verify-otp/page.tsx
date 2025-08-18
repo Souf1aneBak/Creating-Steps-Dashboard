@@ -46,7 +46,7 @@ export default function VerifyOtp() {
       } else if (data.role === 'commercial') {
         router.push('/dashboard/commercial');
       } else if (data.role === 'assistance') {
-        router.push('/dashboard/assistance');
+        router.push('/dashboard/assitance');
       } else {
         router.push('/');
       }

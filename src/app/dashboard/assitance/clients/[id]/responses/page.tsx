@@ -10,6 +10,71 @@ interface Response {
   status: string;
 }
 
+function formatAnswerRecursive(ans: any): string {
+  if (ans === null || ans === undefined) return 'Non renseigné';
+
+  // Primitive values
+  if (typeof ans === 'string' || typeof ans === 'number' || typeof ans === 'boolean') {
+    return ans.toString();
+  }
+
+  // Array → map recursively
+  if (Array.isArray(ans)) {
+    return ans.map(formatAnswerRecursive).join(', ');
+  }
+
+  // Object → handle question groups / conditional fields
+  if (typeof ans === 'object') {
+    // Oui/Non with options (question-group)
+    if ('ouiNon' in ans && Array.isArray(ans.options)) {
+      const opts = ans.options
+        .map((opt: any) => {
+          let line = opt.option || '';
+          if (opt.inputs) {
+            line += ' ' + Object.entries(opt.inputs)
+              .map(([k, v]) => v ? `${k}: ${v}` : '')
+              .filter(Boolean)
+              .join(', ');
+          }
+          return line;
+        })
+        .filter(Boolean)
+        .join('; ');
+      return `Oui/Non: ${ans.ouiNon}${opts ? '; Options: ' + opts : ''}`;
+    }
+
+    // Single radio
+    if ('radio' in ans) return `Radio: ${ans.radio}`;
+
+    // Single value
+    if ('value' in ans) return ans.value?.toString() || 'Non renseigné';
+
+    // Conditional data
+    if (Array.isArray(ans._conditionalData)) {
+      return ans._conditionalData
+        .map((cond: any) => {
+          let line = cond.optionText || '';
+          if (Array.isArray(cond.inputs)) {
+            line += ' ' + cond.inputs
+              .map((input: any) => input.value ? `${input.label || input.key}: ${input.value}` : '')
+              .filter(Boolean)
+              .join(', ');
+          }
+          return line;
+        })
+        .filter(Boolean)
+        .join('; ');
+    }
+
+    // Fallback → stringify simple objects
+    return Object.entries(ans)
+      .map(([k, v]) => `${k}: ${formatAnswerRecursive(v)}`)
+      .join('; ');
+  }
+
+  return String(ans);
+}
+
 export default function ClientResponsesPage() {
   const params = useParams();
   const clientId = params.id;
@@ -53,18 +118,18 @@ export default function ClientResponsesPage() {
               </div>
 
               <div className="mb-2 text-gray-600 text-sm">
-                Submitted on:{' '}
-                {new Date(response.submitted_at).toLocaleString()}
+                Submitted on: {new Date(response.submitted_at).toLocaleString()}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {Object.entries(response.answers).map(([fieldLabel, value]) => (
-  <div key={fieldLabel} className="bg-gray-100 p-2 rounded flex justify-between">
-    <span className="font-medium">{fieldLabel}:</span>
-    <span>{value}</span>
-  </div>
-))}
-
+                  <div key={fieldLabel} className="bg-gray-100 p-2 rounded flex flex-col">
+                    <span className="font-medium">{fieldLabel}:</span>
+                    <pre className="text-sm text-gray-800 whitespace-pre-wrap">
+                      {formatAnswerRecursive(value)}
+                    </pre>
+                  </div>
+                ))}
               </div>
             </div>
           ))}

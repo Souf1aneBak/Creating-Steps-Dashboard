@@ -28,10 +28,7 @@ const commercialLinks: LinkItem[] = [
 
 const assistantLinks: LinkItem[] = [
   { name: 'Dashboard', href: '/dashboard/assitance/forms', icon: '🏠' },
-  { name: 'Moderate Responses', href: '/dashboard/assistant/forms/moderate', icon: '✅' },
   { name: 'Manage Clients', href: '/dashboard/assitance/clients', icon: '👥' },
-  { name: 'Data Cleanup & Reports', href: '/dashboard/assistant/data-cleanup', icon: '🧹' },
-  { name: 'Notifications & Reminders', href: '/dashboard/assistant/notifications', icon: '🔔' },
   { name: 'Settings', href: '/dashboard/assitance/settings', icon: '⚙️' },
 ];
 

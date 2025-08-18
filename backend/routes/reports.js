@@ -4,52 +4,76 @@ import pool from '../config/db.js';
 
 const router = express.Router();
 
+function formatRadioAnswer(ans, fieldId, allAnswers) {
+  if (!ans) return 'Answer: Non renseigné';
+
+  let lines = [];
+  if (ans.radio != null && ans.radio !== '') {
+    const question = ans.radioQuestion || 'Answer';
+    // Merge conditional answer if exists
+    const subKey = `${fieldId}-0`;
+    const subAnswer = allAnswers[subKey] || ans.radio;
+    lines.push(`${question}: ${subAnswer}`);
+  } else if (ans.Answer != null && ans.Answer !== '') {
+    lines.push(`Answer: ${ans.Answer}`);
+  } else if (ans.ouiNon != null && ans.ouiNon !== '') {
+    lines.push(`Answer: ${ans.ouiNon}`);
+  }
+
+  return lines.join('\n');
+}
+
 // Enhanced answer formatter that handles all field types
 function formatAnswer(ans, isNested = false) {
-  if (ans == null) return isNested ? '' : 'Answer: Non renseigné';
+  if (!ans) return isNested ? '' : 'Answer: Non renseigné';
 
-  // 1️⃣ Simple values
   if (typeof ans === 'string' || typeof ans === 'number' || typeof ans === 'boolean') {
     return `Answer: ${ans}`;
   }
 
-  // 2️⃣ Arrays
   if (Array.isArray(ans)) {
     return ans.map(a => formatAnswer(a, true)).filter(Boolean).join('\n');
   }
 
-  // 3️⃣ Objects
   if (typeof ans === 'object') {
     const lines = [];
 
-    // Top-level answer
-    if (ans.Answer != null && ans.Answer !== '') lines.push(`Answer: ${ans.Answer}`);
-    else if (ans.ouiNon != null && ans.ouiNon !== '') lines.push(`Answer: ${ans.ouiNon}`);
+    // 1️⃣ Radio answer first
+    if (ans.radio != null && ans.radio !== '') {
+      const question = ans.radioQuestion
+        || (Array.isArray(ans.conditionalOptions) && ans.conditionalOptions[0]?.radioQuestion)
+        || 'Answer';
+      lines.push(`${question}: ${ans.radio}`);
+    } 
+    // 2️⃣ Fallback: Answer or ouiNon
+    else if (ans.Answer != null && ans.Answer !== '') {
+      lines.push(`Answer: ${ans.Answer}`);
+    } else if (ans.ouiNon != null && ans.ouiNon !== '') {
+      lines.push(`Answer: ${ans.ouiNon}`);
+    }
 
     // Options
     if (Array.isArray(ans.options)) {
       ans.options.forEach(opt => {
         if (opt.option) lines.push(`Option: ${opt.option}`);
 
-        // Inputs
         if (opt.inputs) {
           for (const [key, val] of Object.entries(opt.inputs)) {
             if (val) lines.push(`${key}: ${val}`);
           }
         }
 
-        // Radio
         if (opt.radio != null && opt.radio !== '') {
-          let questionText = opt.radioQuestion
+          const question = opt.radioQuestion
             || (Array.isArray(opt.conditionalOptions) && opt.conditionalOptions[0]?.radioQuestion)
             || 'Answer';
-          lines.push(`${questionText}: ${opt.radio}`);
+          lines.push(`${question}: ${opt.radio}`);
         }
       });
     }
 
-    // Conditional data (_conditionalData)
-    if ('_conditionalData' in ans && Array.isArray(ans._conditionalData)) {
+    // Conditional data
+    if (Array.isArray(ans._conditionalData)) {
       ans._conditionalData.forEach(cond => {
         if (cond.optionText) lines.push(cond.optionText);
 
@@ -65,10 +89,10 @@ function formatAnswer(ans, isNested = false) {
       });
     }
 
-    // Other nested keys
+    // Other nested keys (skip metadata keys)
+    const skipKeys = ['checked', 'Answer', 'ouiNon', 'options', '_conditionalData', 'radio', 'radioQuestion', 'option', 'id', 'label'];
     for (const [key, value] of Object.entries(ans)) {
-      if (['checked', 'Answer', 'ouiNon', 'options', '_conditionalData'].includes(key)) continue;
-
+      if (skipKeys.includes(key)) continue;
       if (typeof value === 'object') {
         const nested = formatAnswer(value, true);
         if (nested) lines.push(nested);
@@ -82,6 +106,7 @@ function formatAnswer(ans, isNested = false) {
 
   return isNested ? '' : `Answer: ${ans.toString()}`;
 }
+
 
 
 router.get('/generate/:responseId', async (req, res) => {
@@ -221,8 +246,15 @@ if (condOptsRows.length > 0) {
      .text(`${field.label}:`, left, yPos);
   yPos += 15;
 
-  const formatted = formatAnswer(answer, false, field.label);
-  printAnswer(formatted, 15);
+
+  
+  let formatted;
+if (field.field_id.startsWith("yes_no")) {
+  formatted = formatRadioAnswer(answer, field.id, answers);
+} else {
+formatted = formatAnswer(answer, false, field.label);
+}
+printAnswer(formatted, 15);
 
 
 

@@ -5,8 +5,17 @@ const router = express.Router();
 
 
 router.get('/', async (req, res) => {
-  const [forms] = await pool.query('SELECT * FROM forms');
-  res.json(forms);
+  const [forms] = await pool.query(`
+  SELECT f.id, f.title, f.description,
+    COUNT(r.id) AS responseCount,
+    MAX(r.submitted_at) AS lastResponse
+  FROM forms f
+  LEFT JOIN form_responses r ON r.form_id = f.id
+  GROUP BY f.id
+  
+`);
+res.json(forms);
+
 });
 
 router.post('/', async (req, res) => {
